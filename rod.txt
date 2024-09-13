@@ -1,0 +1,423 @@
+// apps/web/src/app/layout.tsx
+// apps/web/src/app/layout.tsx
+import React from "react";
+import SettingsButton from "./components/settings-button";
+import "../styles/globals.css";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className="bg-black text-white min-h-screen">
+        <div className="container mx-auto px-4 py-8 relative">
+          <SettingsButton />
+          {children}
+        </div>
+      </body>
+    </html>
+  );
+}
+
+// apps/web/src/app/page.tsx
+// src/app/page.tsx
+'use client';
+
+import Wallet from './components/wallet';
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-black">
+      <Wallet />
+    </div>
+  );
+}
+// apps/web/src/app/components/settings.tsx
+// src/app/components/settings.tsx
+'use client';
+
+import React, { useState } from 'react';
+
+const Settings: React.FC = () => {
+  const [enableNWC, setEnableNWC] = useState(false);
+
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">Settings</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-1">
+            Mint
+          </label>
+          <select className="w-full bg-gray-700 text-white px-3 py-2 rounded">
+            <option>Minibits Mint</option>
+            <option>Coinos Mint</option>
+          </select>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-400">Enable NWC</span>
+          <button 
+            className={`${
+              enableNWC ? 'bg-blue-500' : 'bg-gray-600'
+            } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+            onClick={() => { setEnableNWC(!enableNWC); }}
+          >
+            <span 
+              className={`${
+                enableNWC ? 'translate-x-5' : 'translate-x-0'
+              } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+            />
+          </button>
+        </div>
+        <button className="w-full bg-blue-500 text-white py-2 rounded">
+          Backup Nostr Secret Key
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Settings;
+// apps/web/src/app/components/actions.tsx
+// apps/web/src/app/components/actions.tsx
+import React from "react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  QrCodeIcon,
+} from "@heroicons/react/24/solid";
+
+interface ActionsProps {
+  onTransaction: (amount: number) => void;
+  onScanQR: () => void;
+}
+
+const Actions: React.FC<ActionsProps> = ({ onTransaction, onScanQR }) => {
+  return (
+    <div className="flex justify-center space-x-4 my-8">
+      <button
+        className="bg-white text-black px-6 py-2 rounded-full font-semibold flex items-center"
+        onClick={() => {
+          onTransaction(100);
+        }}
+      >
+        <ArrowDownIcon className="h-5 w-5 mr-2" />
+        RECEIVE
+      </button>
+      <button
+        className="bg-white text-black p-2 rounded-full"
+        onClick={onScanQR}
+      >
+        <QrCodeIcon className="h-6 w-6" />
+      </button>
+      <button
+        className="bg-white text-black px-6 py-2 rounded-full font-semibold flex items-center"
+        onClick={() => {
+          onTransaction(-100);
+        }}
+      >
+        SEND
+        <ArrowUpIcon className="h-5 w-5 ml-2" />
+      </button>
+    </div>
+  );
+};
+
+export default Actions;
+
+// apps/web/src/app/components/receive-view.tsx
+// src/app/components/receive-view.tsx
+import React from 'react';
+
+const ReceiveView: React.FC = () => {
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">Receive Sats</h2>
+      <div className="w-48 h-48 bg-white mx-auto mb-4" />
+      <p className="text-center text-gray-300">
+        Scan this QR code to receive sats
+      </p>
+    </div>
+  );
+};
+
+export default ReceiveView;
+// apps/web/src/app/components/wallet.tsx
+// src/app/components/wallet.tsx
+'use client';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useGesture } from 'react-use-gesture';
+import Balance from './balance';
+import TransactionOrbit from './transaction-orbit';
+import SendView from './send-view';
+import ReceiveView from './receive-view';
+import TransactionHistory from './transaction-history';
+import Settings from './settings';
+
+const Wallet: React.FC = () => {
+  const [balance, setBalance] = useState(10760);
+  const [weeklyAverage] = useState(15000);
+  const [currentView, setCurrentView] = useState('main');
+  const [transactions, setTransactions] = useState([
+    { id: 1, amount: -100, date: new Date(Date.now() - 1000000) },
+    { id: 2, amount: 500, date: new Date(Date.now() - 2000000) },
+    { id: 3, amount: -50, date: new Date(Date.now() - 3000000) },
+    { id: 4, amount: 1000, date: new Date(Date.now() - 4000000) },
+    { id: 5, amount: -200, date: new Date(Date.now() - 5000000) },
+  ]);
+
+  const bind = useGesture({
+    onSwipe: ({ direction: [x, y] }) => {
+      if (Math.abs(x) > Math.abs(y)) {
+        if (x > 0) setCurrentView('settings');
+        else setCurrentView('history');
+      } else if (y > 0) setCurrentView('receive');
+        else setCurrentView('send');
+    },
+  });
+
+  const handleMainCircleTap = () => {
+    setCurrentView('main');
+  };
+
+  const handleTransaction = (amount: number) => {
+    setBalance(prevBalance => prevBalance + amount);
+    setTransactions(prevTransactions => [
+      { id: Date.now(), amount, date: new Date() },
+      ...prevTransactions,
+    ]);
+    setCurrentView('main');
+  };
+
+  return (
+    <div className="h-screen w-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+      <div {...bind()} className="relative w-80 h-80">
+        <motion.div 
+          animate={{
+            scale: [1, 1.05, 1],
+          }}
+          className="absolute inset-0 rounded-full bg-gradient-to-t from-blue-500 to-purple-600 flex items-center justify-center cursor-pointer"
+          onClick={handleMainCircleTap}
+          transition={{
+            duration: 2,
+            ease: "easeInOut",
+            times: [0, 0.5, 1],
+            repeat: Infinity,
+          }}
+        >
+          <Balance balance={balance} weeklyAverage={weeklyAverage} />
+        </motion.div>
+        <TransactionOrbit transactions={transactions} />
+      </div>
+
+      <AnimatePresence>
+        {currentView !== 'main' && (
+          <motion.div
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            exit={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+          >
+            {currentView === 'send' && <SendView onSend={handleTransaction} />}
+            {currentView === 'receive' && <ReceiveView />}
+            {currentView === 'history' && <TransactionHistory transactions={transactions} />}
+            {currentView === 'settings' && <Settings />}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default Wallet;
+// apps/web/src/app/components/transaction-history.tsx
+// src/app/components/transaction-history.tsx
+'use client';
+
+import React from 'react';
+import { formatDistanceToNow } from 'date-fns';
+
+interface Transaction {
+  id: number;
+  amount: number;
+  date: Date;
+}
+
+interface TransactionHistoryProps {
+  transactions: Transaction[];
+}
+
+const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions }) => {
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full max-h-96 overflow-y-auto">
+      <h2 className="text-2xl font-bold mb-4">Transaction History</h2>
+      {transactions.map((tx) => (
+        <div className="flex justify-between items-center mb-2 pb-2 border-b border-gray-700" key={tx.id}>
+          <div className={tx.amount > 0 ? "text-green-500" : "text-red-500"}>
+            {tx.amount > 0 ? '+' : ''}{tx.amount} sats
+          </div>
+          <div className="text-gray-400 text-sm">
+            {formatDistanceToNow(tx.date, { addSuffix: true })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default TransactionHistory;
+// apps/web/src/app/components/send-view.tsx
+// src/app/components/send-view.tsx
+'use client';
+
+import React, { useState } from 'react';
+
+interface SendViewProps {
+  onSend: (amount: number) => void;
+}
+
+const SendView: React.FC<SendViewProps> = ({ onSend }) => {
+  const [amount, setAmount] = useState('');
+
+  const handleSend = () => {
+    const numAmount = parseInt(amount);
+    if (!isNaN(numAmount)) {
+      onSend(-numAmount);
+    }
+  };
+
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">Send Sats</h2>
+      <input
+        className="w-full bg-gray-700 text-white px-3 py-2 rounded mb-4"
+        onChange={(e) => { setAmount(e.target.value); }}
+        placeholder="Amount in sats"
+        type="number"
+        value={amount}
+      />
+      <button
+        className="w-full bg-blue-500 text-white py-2 rounded"
+        onClick={handleSend}
+      >
+        Send
+      </button>
+    </div>
+  );
+};
+
+export default SendView;
+// apps/web/src/app/components/settings-button.tsx
+// apps/web/src/app/components/settings-button.tsx
+"use client";
+
+import React from "react";
+import { Cog6ToothIcon } from "@heroicons/react/24/solid";
+
+const SettingsButton: React.FC = () => {
+  const handleOpenSettings = () => {
+    const event = new CustomEvent("openSettings");
+    window.dispatchEvent(event);
+  };
+
+  return (
+    <button
+      className="absolute top-4 right-4 text-white hover:text-gray-300 transition duration-200"
+      onClick={handleOpenSettings}
+    >
+      <Cog6ToothIcon className="h-6 w-6" />
+    </button>
+  );
+};
+
+export default SettingsButton;
+
+// apps/web/src/app/components/balance.tsx
+// src/app/components/balance.tsx
+import React from 'react';
+
+interface BalanceProps {
+  balance: number;
+  weeklyAverage: number;
+}
+
+const Balance: React.FC<BalanceProps> = ({ balance, weeklyAverage }) => {
+  const percentage = (balance / weeklyAverage) * 100;
+
+  return (
+    <div className="text-center">
+      <div className="text-white text-3xl font-bold">{balance.toLocaleString()} sat</div>
+      <div className="text-gray-300 text-sm mt-2">
+        {percentage.toFixed(0)}% of weekly average
+      </div>
+    </div>
+  );
+};
+
+export default Balance;
+// apps/web/src/app/components/transaction-orbit.tsx
+// src/app/components/transaction-orbit.tsx
+'use client';
+
+import React from 'react';
+import { motion } from 'framer-motion';
+
+interface Transaction {
+  id: number;
+  amount: number;
+  date: Date;
+}
+
+interface TransactionOrbitProps {
+  transactions: Transaction[];
+}
+
+const TransactionOrbit: React.FC<TransactionOrbitProps> = ({ transactions }) => {
+  return (
+    <>
+      {transactions.slice(0, 5).map((tx, index) => (
+        <motion.div
+          animate={{
+            rotate: 360,
+            scale: [1, 1.2, 1],
+          }}
+          className={`absolute w-8 h-8 rounded-full ${tx.amount > 0 ? 'bg-green-500' : 'bg-red-500'}`}
+          key={tx.id}
+          style={{
+            top: `${50 - 40 * Math.cos(index * (Math.PI / 2.5))}%`,
+            left: `${50 + 40 * Math.sin(index * (Math.PI / 2.5))}%`,
+          }}
+          transition={{
+            rotate: {
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear",
+            },
+            scale: {
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            },
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
+export default TransactionOrbit;
+// apps/web/src/styles/globals.css
+/* src/styles/globals.css */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+body {
+  @apply bg-black text-white;
+}
+
+/* Add any additional global styles here */

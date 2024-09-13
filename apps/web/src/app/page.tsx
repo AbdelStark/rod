@@ -1,70 +1,12 @@
-// apps/web/src/app/page.tsx
+// src/app/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import Balance from "./components/balance";
-import Actions from "./components/actions";
-import TransactionHistory from "./components/transaction-history";
-import Settings from "./components/settings";
-
-interface Transaction {
-  id: number;
-  amount: number;
-  date: Date;
-}
+import Wallet from "./components/wallet";
 
 export default function Home() {
-  const [balance, setBalance] = useState<number>(10860);
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: 1, amount: -100, date: new Date(Date.now() - 30000) },
-    { id: 2, amount: 100, date: new Date(Date.now() - 60000) },
-    { id: 3, amount: 100, date: new Date(Date.now() - 90000) },
-    { id: 4, amount: -55, date: new Date(Date.now() - 172800000) },
-    { id: 5, amount: 50, date: new Date(Date.now() - 172800000) },
-    { id: 6, amount: 100, date: new Date(Date.now() - 172800000) },
-    { id: 7, amount: -1002, date: new Date(Date.now() - 172800000) },
-    { id: 8, amount: -420, date: new Date(Date.now() - 172800000) },
-  ]);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleOpenSettings = () => {
-      setIsSettingsOpen(true);
-    };
-    window.addEventListener("openSettings", handleOpenSettings);
-    return () => {
-      window.removeEventListener("openSettings", handleOpenSettings);
-    };
-  }, []);
-
-  const handleTransaction = (amount: number) => {
-    setBalance((prevBalance) => prevBalance + amount);
-    setTransactions((prevTransactions) => [
-      {
-        id: prevTransactions.length + 1,
-        amount,
-        date: new Date(),
-      },
-      ...prevTransactions,
-    ]);
-  };
-
-  const handleScanQR = () => {
-    // Implement QR code scanning logic here
-    console.log("Scanning QR code for Lightning Network invoice");
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <Balance balance={balance} />
-      <Actions onScanQR={handleScanQR} onTransaction={handleTransaction} />
-      <TransactionHistory transactions={transactions} />
-      <Settings
-        isOpen={isSettingsOpen}
-        onClose={() => {
-          setIsSettingsOpen(false);
-        }}
-      />
+    <div className="min-h-screen bg-black">
+      <Wallet />
     </div>
   );
 }
