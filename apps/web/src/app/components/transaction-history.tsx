@@ -1,24 +1,52 @@
-const transactions = [
-  { id: 1, amount: "-55 sat", type: "Debit", time: "2 days ago" },
-  { id: 2, amount: "50 sat", type: "Credit", time: "2 days ago" },
-  { id: 3, amount: "100 sat", type: "Credit", time: "2 days ago" },
-  { id: 4, amount: "-1,002 sat", type: "Debit", time: "2 days ago" },
-  { id: 5, amount: "-420 sat", type: "Debit", time: "2 days ago" },
-];
+// apps/web/src/app/components/transaction-history.tsx
+"use client";
+import React from "react";
+import { formatDistanceToNow } from "date-fns";
 
-export default function TransactionHistory() {
+interface Transaction {
+  id: number;
+  amount: number;
+  date: Date;
+}
+
+interface TransactionHistoryProps {
+  transactions: Transaction[];
+}
+
+const TransactionHistory: React.FC<TransactionHistoryProps> = ({
+  transactions,
+}) => {
+  const formatAmount = (amount: number) => {
+    return amount.toLocaleString();
+  };
+
+  const formatDate = (date: Date) => {
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
+
   return (
-    <div className="my-8">
-      <h3 className="text-xl font-semibold">Transaction History</h3>
+    <div className="mt-8 w-full max-w-md">
+      <h3 className="text-xl font-semibold mb-4">History</h3>
       <ul>
         {transactions.map((tx) => (
-          <li className="border-b py-2 flex justify-between" key={tx.id}>
-            <span>{tx.type}:</span>
-            <span>{tx.amount}</span>
-            <span className="text-gray-500">{tx.time}</span>
+          <li
+            className="border-b border-gray-800 py-2 flex justify-between items-center"
+            key={tx.id}
+          >
+            <span
+              className={`${tx.amount > 0 ? "text-green-500" : "text-red-500"} flex-shrink-0`}
+            >
+              {tx.amount > 0 ? "+" : ""}
+              {formatAmount(tx.amount)} sat
+            </span>
+            <span className="text-gray-500 text-sm ml-4 text-right">
+              {formatDate(tx.date)}
+            </span>
           </li>
         ))}
       </ul>
     </div>
   );
-}
+};
+
+export default TransactionHistory;

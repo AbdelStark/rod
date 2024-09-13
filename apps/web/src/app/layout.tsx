@@ -1,15 +1,19 @@
-import Navbar from "./components/nav-bar";
-import Footer from "./components/footer";
-import "./globals.css";
+// apps/web/src/app/layout.tsx
+import React from "react";
+import SettingsButton from "./components/settings-button";
+import "../styles/globals.css";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
+      <body className="bg-black text-white min-h-screen">
+        <div className="container mx-auto px-4 py-8 relative">
+          <SettingsButton />
+          {children}
         </div>
       </body>
     </html>
