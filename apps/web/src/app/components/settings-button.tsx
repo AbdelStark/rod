@@ -1,4 +1,3 @@
-// apps/web/src/app/components/settings-button.tsx
 "use client";
 
 import React from "react";
@@ -12,7 +11,7 @@ const SettingsButton: React.FC = () => {
 
   return (
     <button
-      className="absolute top-4 right-4 text-white hover:text-gray-300 transition duration-200"
+      className="absolute top-6 right-6 text-gray-400 hover:text-white transition duration-200 bg-gray-800 p-2 rounded-full hover:bg-gray-700"
       onClick={handleOpenSettings}
     >
       <Cog6ToothIcon className="h-6 w-6" />

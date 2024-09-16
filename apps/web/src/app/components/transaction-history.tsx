@@ -1,3 +1,4 @@
+// Transaction History Component
 import React, { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -54,24 +55,22 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   };
 
   return (
-    <div className="mt-12 w-full max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-history text-white">History</h3>
-      </div>
-      <ul className="mb-6 space-y-4">
+    <div className="glass-effect p-6 rounded-lg shadow-md">
+      <h3 className="text-history text-white mb-4">History</h3>
+      <ul className="space-y-4 mb-4">
         {currentTransactions.map((tx) => (
           <li
-            className="bg-gray-800 rounded-lg p-4 flex justify-between items-center"
+            className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 flex justify-between items-center shadow-sm transition-all duration-200 hover:shadow-md"
             key={tx.id}
           >
             <span
-              className={`${tx.amount > 0 ? "text-green-500" : "text-red-500"} text-transaction flex-shrink-0`}
+              className={`${tx.amount > 0 ? "text-green-400" : "text-red-400"} text-transaction flex-shrink-0 font-semibold`}
             >
               {tx.amount > 0 ? "↓ " : "↑ "}
               {formatAmount(Math.abs(tx.amount))} sat
             </span>
             <div className="text-right">
-              <span className="text-gray-400 text-transaction">Ecash</span>
+              <span className="text-gray-300 text-transaction">Ecash</span>
               <span className="text-transaction-date block">
                 {formatDate(tx.date)}
               </span>
@@ -80,7 +79,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         ))}
       </ul>
       {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-2 mt-6">
+        <div className="flex justify-center items-center space-x-2 mt-4">
           <button
             className="text-gray-400 hover:text-white disabled:text-gray-600 transition duration-200"
             disabled={currentPage === 1}
@@ -103,7 +102,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
             <button
               className={`w-8 h-8 flex items-center justify-center rounded-full transition duration-200 ${
                 currentPage === page
-                  ? "bg-gray-600 text-white"
+                  ? "bg-gradient-to-r from-gray-700 to-gray-800 text-white"
                   : "text-gray-400 hover:text-white"
               }`}
               key={page}

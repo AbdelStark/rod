@@ -1,4 +1,3 @@
-// apps/web/src/app/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -43,10 +42,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <Balance balance={balance} />
-      <Actions onScanQR={handleScanQR} onTransaction={handleTransaction} />
-      <TransactionHistory transactions={transactions} />
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-md space-y-8">
+        <Balance balance={balance} />
+        <Actions onScanQR={handleScanQR} onTransaction={handleTransaction} />
+        <TransactionHistory transactions={transactions} />
+      </div>
     </div>
   );
 }

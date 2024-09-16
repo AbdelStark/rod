@@ -14,7 +14,7 @@ const Actions: React.FC<ActionsProps> = ({ onTransaction, onScanQR }) => {
   return (
     <div className="flex justify-center space-x-6 my-12">
       <button
-        className="bg-gray-700 text-white px-6 py-3 rounded-full font-semibold flex items-center transition-colors duration-200 hover:bg-blue-700"
+        className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-6 py-3 rounded-full font-semibold flex items-center transition-all duration-200 hover:from-gray-600 hover:to-gray-700 shadow-md hover:shadow-lg"
         onClick={() => {
           onTransaction(100);
         }}
@@ -23,13 +23,13 @@ const Actions: React.FC<ActionsProps> = ({ onTransaction, onScanQR }) => {
         RECEIVE
       </button>
       <button
-        className="bg-gray-700 text-white p-3 rounded-full transition-colors duration-200 hover:bg-gray-700"
+        className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-3 rounded-full transition-all duration-200 hover:from-gray-700 hover:to-gray-800 shadow-md hover:shadow-lg"
         onClick={onScanQR}
       >
         <QrCodeIcon className="h-6 w-6" />
       </button>
       <button
-        className="bg-gray-700 text-white px-6 py-3 rounded-full font-semibold flex items-center transition-colors duration-200 hover:bg-blue-700"
+        className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-6 py-3 rounded-full font-semibold flex items-center transition-all duration-200 hover:from-gray-600 hover:to-gray-700 shadow-md hover:shadow-lg"
         onClick={() => {
           onTransaction(-100);
         }}

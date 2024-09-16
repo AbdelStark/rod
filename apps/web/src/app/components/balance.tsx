@@ -7,9 +7,9 @@ interface BalanceProps {
 const Balance: React.FC<BalanceProps> = ({ balance }) => {
   const formattedBalance = balance.toLocaleString();
   return (
-    <div className="text-center my-12">
+    <div className="glass-effect p-6 rounded-lg shadow-md">
       <h2 className="text-balance text-white mb-2">{formattedBalance}</h2>
-      <p className="text-gray-400 text-lg">sats</p>
+      <p className="text-gray-400 text-lg uppercase tracking-wide">sats</p>
     </div>
   );
 };
