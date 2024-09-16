@@ -1,6 +1,3 @@
-// apps/web/src/app/components/transaction-history.tsx
-"use client";
-
 import React, { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -57,28 +54,25 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   };
 
   return (
-    <div className="mt-8 w-full max-w-md">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold">History</h3>
-        <button className="bg-gray-800 text-white text-sm px-3 py-1 rounded">
-          FILTER PENDING
-        </button>
+    <div className="mt-12 w-full max-w-md mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-history text-white">History</h3>
       </div>
-      <ul className="mb-4">
+      <ul className="mb-6 space-y-4">
         {currentTransactions.map((tx) => (
           <li
-            className="border-b border-gray-800 py-2 flex justify-between items-center"
+            className="bg-gray-800 rounded-lg p-4 flex justify-between items-center"
             key={tx.id}
           >
             <span
-              className={`${tx.amount > 0 ? "text-green-500" : "text-red-500"} flex-shrink-0`}
+              className={`${tx.amount > 0 ? "text-green-500" : "text-red-500"} text-transaction flex-shrink-0`}
             >
               {tx.amount > 0 ? "↓ " : "↑ "}
               {formatAmount(Math.abs(tx.amount))} sat
             </span>
             <div className="text-right">
-              <span className="text-gray-400 text-sm">Ecash</span>
-              <span className="text-gray-500 text-sm block">
+              <span className="text-gray-400 text-transaction">Ecash</span>
+              <span className="text-transaction-date block">
                 {formatDate(tx.date)}
               </span>
             </div>
@@ -86,9 +80,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         ))}
       </ul>
       {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-2 mt-4">
+        <div className="flex justify-center items-center space-x-2 mt-6">
           <button
-            className="text-gray-400 hover:text-white disabled:text-gray-600"
+            className="text-gray-400 hover:text-white disabled:text-gray-600 transition duration-200"
             disabled={currentPage === 1}
             onClick={() => {
               goToPage(1);
@@ -97,7 +91,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
             <ChevronDoubleLeftIcon className="h-5 w-5" />
           </button>
           <button
-            className="text-gray-400 hover:text-white disabled:text-gray-600"
+            className="text-gray-400 hover:text-white disabled:text-gray-600 transition duration-200"
             disabled={currentPage === 1}
             onClick={() => {
               goToPage(currentPage - 1);
@@ -107,9 +101,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
           </button>
           {paginationRange().map((page) => (
             <button
-              className={`w-8 h-8 flex items-center justify-center rounded-full ${
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition duration-200 ${
                 currentPage === page
-                  ? "bg-white text-black"
+                  ? "bg-gray-600 text-white"
                   : "text-gray-400 hover:text-white"
               }`}
               key={page}
@@ -121,7 +115,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
             </button>
           ))}
           <button
-            className="text-gray-400 hover:text-white disabled:text-gray-600"
+            className="text-gray-400 hover:text-white disabled:text-gray-600 transition duration-200"
             disabled={currentPage === totalPages}
             onClick={() => {
               goToPage(currentPage + 1);
@@ -130,7 +124,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
             <ChevronRightIcon className="h-5 w-5" />
           </button>
           <button
-            className="text-gray-400 hover:text-white disabled:text-gray-600"
+            className="text-gray-400 hover:text-white disabled:text-gray-600 transition duration-200"
             disabled={currentPage === totalPages}
             onClick={() => {
               goToPage(totalPages);

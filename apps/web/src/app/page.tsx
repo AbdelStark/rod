@@ -1,11 +1,10 @@
 // apps/web/src/app/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Balance from "./components/balance";
 import Actions from "./components/actions";
 import TransactionHistory from "./components/transaction-history";
-import Settings from "./components/settings";
 
 interface Transaction {
   id: number;
@@ -25,17 +24,6 @@ export default function Home() {
     { id: 7, amount: -1002, date: new Date(Date.now() - 172800000) },
     { id: 8, amount: -420, date: new Date(Date.now() - 172800000) },
   ]);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleOpenSettings = () => {
-      setIsSettingsOpen(true);
-    };
-    window.addEventListener("openSettings", handleOpenSettings);
-    return () => {
-      window.removeEventListener("openSettings", handleOpenSettings);
-    };
-  }, []);
 
   const handleTransaction = (amount: number) => {
     setBalance((prevBalance) => prevBalance + amount);
@@ -59,12 +47,6 @@ export default function Home() {
       <Balance balance={balance} />
       <Actions onScanQR={handleScanQR} onTransaction={handleTransaction} />
       <TransactionHistory transactions={transactions} />
-      <Settings
-        isOpen={isSettingsOpen}
-        onClose={() => {
-          setIsSettingsOpen(false);
-        }}
-      />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// apps/web/src/app/components/actions.tsx
 import React from "react";
 import {
   ArrowDownIcon,
@@ -13,9 +12,9 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ onTransaction, onScanQR }) => {
   return (
-    <div className="flex justify-center space-x-4 my-8">
+    <div className="flex justify-center space-x-6 my-12">
       <button
-        className="bg-white text-black px-6 py-2 rounded-full font-semibold flex items-center"
+        className="bg-gray-700 text-white px-6 py-3 rounded-full font-semibold flex items-center transition-colors duration-200 hover:bg-blue-700"
         onClick={() => {
           onTransaction(100);
         }}
@@ -24,13 +23,13 @@ const Actions: React.FC<ActionsProps> = ({ onTransaction, onScanQR }) => {
         RECEIVE
       </button>
       <button
-        className="bg-white text-black p-2 rounded-full"
+        className="bg-gray-700 text-white p-3 rounded-full transition-colors duration-200 hover:bg-gray-700"
         onClick={onScanQR}
       >
         <QrCodeIcon className="h-6 w-6" />
       </button>
       <button
-        className="bg-white text-black px-6 py-2 rounded-full font-semibold flex items-center"
+        className="bg-gray-700 text-white px-6 py-3 rounded-full font-semibold flex items-center transition-colors duration-200 hover:bg-blue-700"
         onClick={() => {
           onTransaction(-100);
         }}
