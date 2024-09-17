@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Connect } from "@nostr-connect/connect";
+import { NostrKeyManager } from "../utils/nostr-key-manager";
 import Header from "./components/header";
 import Balance from "./components/balance";
 import Actions from "./components/actions";
@@ -127,6 +129,32 @@ export default function Home() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [connect, setConnect] = useState<Connect | null>(null);
+
+  useEffect(() => {
+    initializeNostrConnect();
+  }, []);
+
+  async function initializeNostrConnect() {
+    try {
+      const { secretKey, publicKey } =
+        await NostrKeyManager.getOrCreateKeyPair();
+      console.log("Nostr keypair ready:", { publicKey });
+
+      const newConnect = new Connect({
+        secretKey,
+        relay: "wss://nostr.vulpem.com",
+      });
+      newConnect.events.on("connect", (walletPubkey: string) => {
+        console.log("Connected with wallet:", walletPubkey);
+      });
+      await newConnect.init();
+
+      setConnect(newConnect);
+    } catch (error) {
+      console.error("Error initializing Nostr keypair:", error);
+    }
+  }
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
