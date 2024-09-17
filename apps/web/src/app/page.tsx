@@ -9,6 +9,7 @@ import TransactionHistory from "./components/transaction-history";
 import NotificationModal from "./components/notification-modal";
 import SearchModal from "./components/search-modal";
 import TransactionModal from "./components/transaction-modal";
+import Settings from "./components/settings";
 
 interface Transaction {
   id: number;
@@ -125,6 +126,7 @@ export default function Home() {
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -167,8 +169,7 @@ export default function Home() {
   };
 
   const handleSettingsClick = () => {
-    console.log("Settings button clicked");
-    // Implement settings page navigation here
+    setIsSettingsOpen(true);
   };
 
   const handleSearchClick = () => {
@@ -234,6 +235,14 @@ export default function Home() {
           transaction={selectedTransaction}
         />
       ) : null}{" "}
+      {isSettingsOpen ? (
+        <Settings
+          isOpen={isSettingsOpen}
+          onClose={() => {
+            setIsSettingsOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
