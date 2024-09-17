@@ -1,10 +1,9 @@
 import NDK, {NDKNip07Signer, NDKNwc, NDKPrivateKeySigner} from '@nostr-dev-kit/ndk';
 import React, {createContext, useContext, useEffect, useState} from 'react';
 
-import {useSettingsStore} from '../store';
-import {useAuth} from '../store/auth';
-import {AFK_RELAYS} from '../utils/relay';
 import NDKWallet, {NDKCashuWallet} from "@nostr-dev-kit/ndk-wallet"
+import { useAuth, useSettingsStore } from '../../store';
+import { ROD_RELAYS } from '../../utils/relay';
 
 export type NostrContextType = {
   ndk: NDK;
@@ -23,8 +22,7 @@ export const NostrProvider: React.FC<React.PropsWithChildren> = ({children}) => 
 
   const [ndk, setNdk] = useState<NDK>(
     new NDK({
-      explicitRelayUrls: relays ?? AFK_RELAYS,
-      
+      explicitRelayUrls: relays ?? ROD_RELAYS,
     }),
   );
 
@@ -36,13 +34,13 @@ export const NostrProvider: React.FC<React.PropsWithChildren> = ({children}) => 
   const nip07Signer = new NDKNip07Signer();
   const [ndkExtension, setNdkExtension] = useState<NDK>(
     new NDK({
-      explicitRelayUrls: relays ?? AFK_RELAYS,
+      explicitRelayUrls: relays ?? ROD_RELAYS,
     }),
   );
 
   useEffect(() => {
     const newNdk = new NDK({
-      explicitRelayUrls: relays ?? AFK_RELAYS,
+      explicitRelayUrls: relays ?? ROD_RELAYS,
       signer: privateKey
         ? new NDKPrivateKeySigner(privateKey)
         : isExtension

@@ -13,9 +13,12 @@ import SearchModal from "./components/search-modal";
 import TransactionModal from "./components/transaction-modal";
 import ReceiveModal from "./components/receive-modal";
 import { KEYS_STORAGE } from "./constants";
-import { generateNewMnemonic } from "@cashu/cashu-ts";
-import { useCashuStore } from "../store";
+import { useAuth, useCashuStore } from "../store";
 import Settings from "./components/settings";
+import { useCashu } from "../hooks/useCashu";
+import { MINTS_URLS } from "../utils/relay";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import InvoicesHistory from "./components/invoices-history";
 
 interface Transaction {
   id: number;
@@ -98,25 +101,9 @@ export default function Home() {
     },
   ]);
 
-  const {mnemonic, setMnemonic} = useCashuStore()
-  useEffect(() => {
-    const checkMnemonic = () => {
-      if(typeof window == "undefined") return;
-
-
-      const mnemonic = window.localStorage.getItem(KEYS_STORAGE.MNEMONIC.toString())
-      console.log("mnemonic",mnemonic)
-
-      if(!mnemonic) {
-
-        const nMnemonic = generateNewMnemonic()
-        /** Encrypt mnemonic with a password? */
-        window.localStorage.setItem(KEYS_STORAGE.MNEMONIC.toString(), nMnemonic)
-        setMnemonic(nMnemonic)
-      }
-    }
-    checkMnemonic()
-  },[mnemonic, window])
+  const { mnemonic, setMnemonic } = useCashuStore()
+  const { publicKey, setPublicKey, setAuth } = useAuth()
+  const { connectCashMint, connectCashWallet } = useCashu()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
@@ -158,12 +145,13 @@ export default function Home() {
   useEffect(() => {
     initializeNostrConnect();
   }, []);
-
   async function initializeNostrConnect() {
     try {
-      const { secretKey, publicKey } =
+      const { secretKey, publicKey, mnemonic } =
         await NostrKeyManager.getOrCreateKeyPair();
       console.log("Nostr keypair ready:", { publicKey });
+      setAuth(publicKey, secretKey,)
+      setMnemonic(mnemonic)
 
       const newConnect = new Connect({
         secretKey,
@@ -173,6 +161,12 @@ export default function Home() {
         console.log("Connected with wallet:", walletPubkey);
       });
       await newConnect.init();
+
+
+      const { mint, keys } = await connectCashMint(MINTS_URLS.MINIBITS)
+      console.log("cashuMint", mint)
+      const wallet = await connectCashWallet(mint, keys[0])
+      console.log("wallet", wallet)
 
       setConnect(newConnect);
     } catch (error) {
@@ -268,11 +262,9 @@ export default function Home() {
 
       <ReceiveModal
         isOpen={isReceiveModalOpen}
-        notifications={notifications}
         onClose={() => {
           setIsReceiveModalOpen(false);
         }}
-        onGenerateInvoice={handleMarkNotificationsAsRead}
       />
       <SearchModal
         contacts={contacts}
@@ -289,10 +281,35 @@ export default function Home() {
         onSend={handleSend}
       />
       <QuickSend contacts={contacts} onSend={handleQuickSend} />
-      <TransactionHistory
-        onTransactionClick={handleTransactionClick}
-        transactions={transactions}
-      />
+
+      <TabGroup>
+
+        <TabList className={"flex gap-5"}>
+          <Tab
+          // className={`px-4 py-2 -mb-px border-b-2 transition-colors duration-300
+          //   data-[selected]:bg-blue-500  border-transparent text-gray-500 hover:text-blue-500
+          // }`}
+          >Invoices</Tab>
+          <Tab
+          >Transactions</Tab>
+        </TabList>
+        <TabPanels>
+
+          <TabPanel>
+            <InvoicesHistory
+              onTransactionClick={handleTransactionClick}
+              transactions={transactions}
+            />
+          </TabPanel>
+          <TabPanel>
+            <TransactionHistory
+              onTransactionClick={handleTransactionClick}
+              transactions={transactions}
+            />
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
+
       {selectedTransaction ? (
         <TransactionModal
           onClose={handleCloseTransactionModal}
