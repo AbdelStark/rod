@@ -1,12 +1,19 @@
 import React from "react";
-import { BellIcon } from "@heroicons/react/24/outline";
+import { BellIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 
 interface HeaderProps {
   userHandle: string;
   avatarUrl: string;
+  onNotificationClick: () => void;
+  onSettingsClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ userHandle, avatarUrl }) => {
+const Header: React.FC<HeaderProps> = ({
+  userHandle,
+  avatarUrl,
+  onNotificationClick,
+  onSettingsClick,
+}) => {
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center">
@@ -22,9 +29,20 @@ const Header: React.FC<HeaderProps> = ({ userHandle, avatarUrl }) => {
           <p className="text-sm text-text-secondary">Let's go nuts!</p>
         </div>
       </div>
-      <button className="p-2 bg-card-background rounded-full">
-        <BellIcon className="w-6 h-6 text-text-secondary" />
-      </button>
+      <div className="flex space-x-2">
+        <button
+          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
+          onClick={onNotificationClick}
+        >
+          <BellIcon className="w-6 h-6 text-text-secondary" />
+        </button>
+        <button
+          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
+          onClick={onSettingsClick}
+        >
+          <Cog6ToothIcon className="w-6 h-6 text-text-secondary" />
+        </button>
+      </div>
     </div>
   );
 };

@@ -19,6 +19,7 @@ export default function Home() {
     { id: 2, amount: 100, date: new Date(Date.now() - 180000) },
     { id: 3, amount: 100, date: new Date(Date.now() - 240000) },
     { id: 4, amount: -55, date: new Date(Date.now() - 172800000) },
+    // Add more transactions here to test pagination
   ]);
 
   const handleTransaction = (amount: number) => {
@@ -46,9 +47,24 @@ export default function Home() {
     console.log("Gift functionality");
   };
 
+  const handleNotificationClick = () => {
+    console.log("Notification button clicked");
+    // Implement notification functionality here
+  };
+
+  const handleSettingsClick = () => {
+    console.log("Settings button clicked");
+    // Implement settings page navigation here
+  };
+
   return (
     <div className="max-w-md mx-auto p-6 min-h-screen">
-      <Header avatarUrl="/avatar.jpeg" userHandle="@goku" />
+      <Header
+        avatarUrl="/avatar.jpeg"
+        onNotificationClick={handleNotificationClick}
+        onSettingsClick={handleSettingsClick}
+        userHandle="@goku"
+      />
       <Balance balance={balance} />
       <Actions
         onGift={handleGift}

@@ -50,12 +50,30 @@ body {
   .pagination-text {
     @apply text-sm text-text-secondary transition-colors duration-200;
   }
+
+  .dropdown {
+    @apply absolute top-full left-0 mt-2 w-full bg-card-background rounded-md shadow-lg z-10 py-1;
+    animation: fadeInDown 0.3s ease-out;
+  }
+
+  .dropdown-item {
+    @apply block w-full text-left px-4 py-2 text-sm text-text-primary transition-colors duration-200;
+  }
+
+  .dropdown-item:hover {
+    @apply bg-gray-700;
+  }
 }
 
-/* Add this for a fade effect when changing pages */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-in {
