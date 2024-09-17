@@ -1,56 +1,49 @@
-/* apps/web/src/styles/globals.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 18, 18, 24;
-  --background-end-rgb: 10, 10, 14;
+  --background-color: #1a1a1a;
+  --card-background: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --accent-color: #8b5cf6;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    135deg,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
-  min-height: 100vh;
+  background-color: var(--background-color);
+  color: var(--text-primary);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-}
+@layer components {
+  .card {
+    @apply bg-card-background rounded-xl shadow-md;
+  }
 
-.text-balance {
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -0.05em;
-}
+  .action-button {
+    @apply flex flex-col items-center justify-center rounded-full w-16 h-16 bg-card-background shadow-md;
+  }
 
-.text-history {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
+  .action-button svg {
+    @apply w-6 h-6 text-accent;
+  }
 
-.text-transaction {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
+  .action-button span {
+    @apply text-xs mt-1 text-text-secondary;
+  }
 
-.text-transaction-date {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
-}
+  .transaction-item {
+    @apply flex justify-between items-center py-3 border-b border-gray-700 last:border-b-0;
+  }
 
-.glass-effect {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  .balance-text {
+    @apply text-3xl font-bold text-text-primary;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold mb-2 text-text-secondary;
+  }
 }
