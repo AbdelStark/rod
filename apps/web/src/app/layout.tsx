@@ -3,6 +3,8 @@ import React from "react";
 import "../styles/globals.css";
 import { NostrProvider } from "./context";
 import { TanstackProvider } from "./context/TanstackProvider";
+import { ToastProvider } from "../hooks/useToast";
+import ToastContainer from "./components/toast-container";
 
 export default function RootLayout({
   children,
@@ -15,7 +17,10 @@ export default function RootLayout({
         <div className="container mx-auto px-4 py-8 relative max-w-md">
           <NostrProvider>
             <TanstackProvider>
-              {children}
+              <ToastProvider>
+                {children}
+                <ToastContainer></ToastContainer>
+              </ToastProvider>
             </TanstackProvider>
           </NostrProvider>
         </div>

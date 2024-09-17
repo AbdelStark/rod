@@ -44,7 +44,7 @@ export const getProofs= async (proofs:Proof[]) => {
 };
 
 
-export const getInvoices= async () => {
+export const getInvoices=  () => {
 
 
   return localStorage.getItem(KEY_CASHU_STORE.INVOICES);

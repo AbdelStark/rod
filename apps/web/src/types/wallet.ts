@@ -1,3 +1,5 @@
+import { MintQuoteState } from "@cashu/cashu-ts";
+
 export interface ICashuInvoice {
     bolt11?: string;
     quote?: string;
@@ -5,6 +7,6 @@ export interface ICashuInvoice {
     date?: number;
     mint?: string;
     unit?: string;
-    state?:string;
+    state?:string|MintQuoteState;
   }
   

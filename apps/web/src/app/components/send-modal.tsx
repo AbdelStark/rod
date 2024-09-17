@@ -2,31 +2,27 @@ import React, { ChangeEvent, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
-import { MintQuoteResponse, MintQuoteState } from "@cashu/cashu-ts";
+import { MintQuoteResponse } from "@cashu/cashu-ts";
 import { getInvoices, storeInvoices } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MINTS_URLS } from "../../utils/relay";
 
-interface Notification {
-  id: number;
-  message: string;
-  date: Date;
-  read: boolean;
-}
 
-interface NotificationModalProps {
+interface SendModalProps {
   isOpen: boolean;
   onClose: () => void;
   onGenerateInvoice?: () => void;
 }
 
-const ReceiveModal: React.FC<NotificationModalProps> = ({
+const SendModal: React.FC<SendModalProps> = ({
   isOpen,
   onClose,
   onGenerateInvoice,
 }) => {
 
   const [amount, setAmount] = useState<number | undefined>()
+  const [ecash, setEcash] = useState<string | undefined>()
+  const [invoice, setInvoice] = useState<string | undefined>()
   const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
   const [isCopied, setIsCopied] = useState<boolean>(false);
@@ -37,46 +33,52 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
     console.log("quote", quote)
     setQuote(quote?.request)
 
-    
+
     const invoicesLocal = await getInvoices()
+
 
     const cashuInvoice: ICashuInvoice = {
       bolt11: quote?.request?.request,
       quote: quote?.request?.quote,
-      state: quote?.request?.state ?? MintQuoteState.UNPAID,
+      state: quote?.request?.state,
       date: new Date().getTime(),
-      amount:amount?.toString(),
-      mint:mintUrl,
+      amount: amount?.toString(),
+      mint: mintUrl,
     }
 
     if (invoicesLocal) {
       const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
 
-      console.log("invoices",invoices)
+      console.log("invoices", invoices)
       storeInvoices([...invoices, cashuInvoice])
 
 
     } else {
-      console.log("no old invoicesLocal",invoicesLocal)
+      console.log("no old invoicesLocal", invoicesLocal)
 
       storeInvoices([cashuInvoice])
 
     }
   }
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeEcash = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const numberValue = parseFloat(value);
+    setInvoice(value);
+
+  };
+
+  const handleChangeInvoice = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const numberValue = parseFloat(value);
     console.log("numberValue", numberValue)
+    setInvoice(value);
 
-    // Update changeSet only if the input is a valid number
-    if (!isNaN(numberValue)) {
-      setAmount(numberValue);
-    }
   };
+
 
   const handleCopy = async () => {
     try {
-      if(!quote?.request) return;
+      if (!quote?.request) return;
       await navigator.clipboard.writeText(quote?.request);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000); // Reset copy state after 2 seconds
@@ -95,38 +97,35 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
 
           <input
             className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            onChange={handleChange}
-            type="number"
-            value={amount}
+            onChange={handleChangeEcash}
+            type="text"
+            value={ecash}
           >
           </input>
+          {/* 
+          <input
+            className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+            onChange={handleChangeInvoice}
+            type="text"
+            value={invoice}
+          >
+          </input> */}
 
-          {quote &&
-            <div>
-
-              <div className="mb-4">
-                <p className="overflow-auto max-h-64 whitespace-pre-wrap break-words">
-                  {quote?.request}
-                </p>
-              </div>
-              <button
-                onClick={handleCopy}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-              >
-                {isCopied ? 'Copied!' : 'Copy to Clipboard'}
-              </button>
-            </div>
-
-          }
 
           <div className="mt-4 flex justify-between">
 
 
             <button
               className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-              onClick={handleGenerate}
+            // onClick={handleGenerate}
             >
-              Generate
+              Pay eCash
+            </button>
+            <button
+              className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+            // onClick={handleGenerate}
+            >
+              Pay Lightning
             </button>
             <button
               className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
@@ -143,4 +142,4 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
   );
 };
 
-export default ReceiveModal;
+export default SendModal;

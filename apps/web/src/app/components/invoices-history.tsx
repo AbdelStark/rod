@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { getInvoices } from "../../utils/storage/cashu";
+import { getInvoices, storeInvoices } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { useCashu } from "../../hooks/useCashu";
+import { TypeToast, useToast } from "../../hooks/useToast";
+import { MintQuoteState } from "@cashu/cashu-ts";
 
 interface Transaction {
   id: number;
@@ -26,9 +28,16 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 }) => {
 
   const { checkMintQuote } = useCashu()
+  const { addToast } = useToast();
+  const [invoices, setInvoices] = useState<ICashuInvoice[] | undefined>([])
+
   const [currentPage, setCurrentPage] = useState(1);
   const [animate, setAnimate] = useState(false);
-  const [invoices, setInvoices] = useState<ICashuInvoice[] | undefined>([])
+
+  const totalInvoices = useMemo(() => {
+
+    return invoices?.length ?? 10
+  }, [invoices])
 
   const formatAmount = (amount: number) => {
     return `${amount > 0 ? "+" : ""}${amount} sats`;
@@ -38,9 +47,9 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
     return formatDistanceToNow(date, { addSuffix: true });
   };
 
-  const totalPages = Math.ceil(transactions.length / TRANSACTIONS_PER_PAGE);
+  const totalPages = Math.ceil(totalInvoices / TRANSACTIONS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
-  const visibleTransactions = transactions.slice(
+  const visibleInvoices = invoices?.slice(
     startIndex,
     startIndex + TRANSACTIONS_PER_PAGE,
   );
@@ -73,7 +82,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         console.log("invoices", invoices)
-        setInvoices(invoices)
+        setInvoices(invoices.reverse())
 
 
       }
@@ -84,42 +93,103 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 
   const handleVerify = async (quote?: string) => {
 
+    console.log("handleVerify")
     if (!quote) return;
-    console.log("quote",quote)
+    console.log("quote", quote)
     const check = await checkMintQuote(quote)
-    console.log("check",check)
+    console.log("check", check)
+    if (check?.state == MintQuoteState.UNPAID) {
+      addToast("Unpaid", TypeToast.warning)
+    }
+    else if (check?.state == MintQuoteState.PAID) {
+      addToast("Invoice is paid", TypeToast.success)
+      const invoicesUpdated = invoices?.map((i) => {
+        if (i?.quote == quote) {
+          i.state = MintQuoteState.PAID
+          return i;
+        }
+        return i;
+      }) ?? []
+      storeInvoices(invoicesUpdated)
+
+    }
+
   }
 
+  const handleCopy = async (quote?: string) => {
+    try {
+      if (!quote) return;
+      await navigator.clipboard.writeText(quote);
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  };
   return (
     <div>
       <h3 className="section-title mb-4">Invoices</h3>
       <div className="card">
-        {invoices && invoices.length > 0 && invoices?.map((invoice) => (
+        {visibleInvoices && visibleInvoices.length > 0 && visibleInvoices?.map((invoice) => (
           <div
-            className="transaction-item px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors duration-150"
-            key={invoice?.bolt11}
-            onClick={() => {
-              // onTransactionClick(tx);
-            }}
+            className="px-4 py-3"
           >
-            <div className="flex justify-between items-center">
-              <span
-                className={`font-semibold ${Number(invoice?.amount) > 0 ? "text-green-400" : "text-red-400"
-                  }`}
+
+            <div>State: {invoice?.state}</div>
+
+            <div
+              className="flex justify-between items-center hover:bg-gray-700 cursor-pointer transition-colors duration-150"
+
+              key={invoice?.bolt11}
+              onClick={() => {
+                // onTransactionClick(tx);
+              }}
+            >
+              <div className="flex justify-between items-center ">
+                <span
+                  className={`font-semibold ${Number(invoice?.amount) > 0 ? "text-green-400" : "text-red-400"
+                    }`}
+                >
+                  {formatAmount(Number(invoice?.amount))}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <span className="text-sm text-text-secondary">
+                  {formatDate(new Date(invoice?.date ?? new Date()))}
+                </span>
+              </div>
+              <div
+                className="p-1"
               >
-                {formatAmount(Number(invoice?.amount))}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mt-1">
-              <span className="text-sm text-text-secondary">
-                {formatDate(new Date(invoice?.date ?? new Date()))}
-              </span>
+                <button
+                  onClick={() => handleVerify(invoice?.quote)}> Verify</button>
+              </div>
+              <div
+                className="p-1"
+              >
+                <button onClick={() => handleCopy(invoice?.quote)}> Copy</button>
+
+              </div>
+
             </div>
 
-            <div>
-              <button onClick={() => handleVerify(invoice?.quote)}> Verify</button>
-            </div>
+            {/* <div
+              className="transaction-item px-4 py-3  transition-colors duration-150"
+            >
+              <div
+                className="p-1"
+              >
+                <button
+                  onClick={() => handleVerify(invoice?.quote)}> Verify</button>
+              </div>
+              <div
+                className="p-1"
+              >
+                <button onClick={() => handleCopy(invoice?.quote)}> Copy</button>
+
+              </div>
+            </div> */}
+
           </div>
+
         ))}
       </div>
       {totalPages > 1 && (
