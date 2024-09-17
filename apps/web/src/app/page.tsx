@@ -6,6 +6,7 @@ import Balance from "./components/balance";
 import Actions from "./components/actions";
 import QuickSend from "./components/quick-send";
 import TransactionHistory from "./components/transaction-history";
+import NotificationModal from "./components/notification-modal";
 
 interface Transaction {
   id: number;
@@ -16,6 +17,13 @@ interface Transaction {
 interface Contact {
   handle: string;
   avatarUrl: string;
+}
+
+interface Notification {
+  id: number;
+  message: string;
+  date: Date;
+  read: boolean;
 }
 
 export default function Home() {
@@ -36,6 +44,29 @@ export default function Home() {
     { handle: "@piccolo", avatarUrl: "/avatar/piccolo.jpg" },
     { handle: "@cell", avatarUrl: "/avatar/cell.jpg" },
   ];
+
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: 1,
+      message: "You received 100 sats from @vegeta",
+      date: new Date(Date.now() - 3600000),
+      read: false,
+    },
+    {
+      id: 2,
+      message: "Your transaction of 55 sats to @gohan is completed",
+      date: new Date(Date.now() - 7200000),
+      read: false,
+    },
+    {
+      id: 3,
+      message: "Welcome to Rod wallet application!",
+      date: new Date(Date.now() - 86400000),
+      read: true,
+    },
+  ]);
+
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   const handleTransaction = (amount: number) => {
     setBalance((prevBalance) => prevBalance + amount);
@@ -67,11 +98,6 @@ export default function Home() {
     // Implement quick send functionality here
   };
 
-  const handleNotificationClick = () => {
-    console.log("Notification button clicked");
-    // Implement notification functionality here
-  };
-
   const handleSettingsClick = () => {
     console.log("Settings button clicked");
     // Implement settings page navigation here
@@ -82,6 +108,21 @@ export default function Home() {
     // Implement search functionality here
   };
 
+  const handleNotificationClick = () => {
+    setIsNotificationModalOpen(true);
+  };
+
+  const handleMarkNotificationsAsRead = () => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notification) => ({
+        ...notification,
+        read: true,
+      })),
+    );
+  };
+
+  const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
+
   return (
     <div className="max-w-md mx-auto p-6 min-h-screen">
       <Header
@@ -89,8 +130,16 @@ export default function Home() {
         onNotificationClick={handleNotificationClick}
         onSearchClick={handleSearchClick}
         onSettingsClick={handleSettingsClick}
+        unreadNotificationsCount={unreadNotificationsCount}
         userHandle="@goku"
-        userHandle="@goku"
+      />
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        notifications={notifications}
+        onClose={() => {
+          setIsNotificationModalOpen(false);
+        }}
+        onMarkAsRead={handleMarkNotificationsAsRead}
       />
       <Balance balance={balance} />
       <Actions

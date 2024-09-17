@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.8",
     "@heroicons/react": "^2.1.5",
     "@repo/ui": "workspace:*",
     "date-fns": "^3.6.0",

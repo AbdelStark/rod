@@ -11,6 +11,7 @@ interface HeaderProps {
   onNotificationClick: () => void;
   onSettingsClick: () => void;
   onSearchClick: () => void;
+  unreadNotificationsCount: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -19,6 +20,7 @@ const Header: React.FC<HeaderProps> = ({
   onNotificationClick,
   onSettingsClick,
   onSearchClick,
+  unreadNotificationsCount,
 }) => {
   return (
     <div className="flex justify-between items-center mb-6">
@@ -37,19 +39,24 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       <div className="flex space-x-2">
         <button
-          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
+          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-accent"
           onClick={onSearchClick}
         >
           <MagnifyingGlassIcon className="w-6 h-6 text-text-secondary" />
         </button>
         <button
-          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
+          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-accent relative"
           onClick={onNotificationClick}
         >
           <BellIcon className="w-6 h-6 text-text-secondary" />
+          {unreadNotificationsCount > 0 && (
+            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {unreadNotificationsCount}
+            </span>
+          )}
         </button>
         <button
-          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
+          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-accent"
           onClick={onSettingsClick}
         >
           <Cog6ToothIcon className="w-6 h-6 text-text-secondary" />
