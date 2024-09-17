@@ -12,6 +12,7 @@ import NotificationModal from "./components/notification-modal";
 import SearchModal from "./components/search-modal";
 import TransactionModal from "./components/transaction-modal";
 import Settings from "./components/settings";
+import SendModal from "./components/send-modal";
 
 interface Transaction {
   id: number;
@@ -128,6 +129,7 @@ export default function Home() {
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [connect, setConnect] = useState<Connect | null>(null);
 
@@ -179,8 +181,22 @@ export default function Home() {
   };
 
   const handleSend = () => {
-    handleTransaction(-100);
+    setIsSendModalOpen(true);
   };
+
+  const handleSendConfirm = (amount: number, recipient: string) => {
+    handleTransaction(-amount);
+    setNotifications((prevNotifications) => [
+      {
+        id: prevNotifications.length + 1,
+        message: `You sent ${amount} sats to ${recipient}`,
+        date: new Date(),
+        read: false,
+      },
+      ...prevNotifications,
+    ]);
+  };
+
   const handleReceive = () => {
     handleTransaction(100);
   };
@@ -271,6 +287,14 @@ export default function Home() {
           }}
         />
       ) : null}
+      <SendModal
+        contacts={contacts}
+        isOpen={isSendModalOpen}
+        onClose={() => {
+          setIsSendModalOpen(false);
+        }}
+        onSend={handleSendConfirm}
+      />
     </div>
   );
 }
