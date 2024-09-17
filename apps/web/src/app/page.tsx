@@ -7,6 +7,7 @@ import Actions from "./components/actions";
 import QuickSend from "./components/quick-send";
 import TransactionHistory from "./components/transaction-history";
 import NotificationModal from "./components/notification-modal";
+import SearchModal from "./components/search-modal";
 
 interface Transaction {
   id: number;
@@ -67,6 +68,7 @@ export default function Home() {
   ]);
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const handleTransaction = (amount: number) => {
     setBalance((prevBalance) => prevBalance + amount);
@@ -105,7 +107,7 @@ export default function Home() {
 
   const handleSearchClick = () => {
     console.log("Search button clicked");
-    // Implement search functionality here
+    setIsSearchModalOpen(true);
   };
 
   const handleNotificationClick = () => {
@@ -140,6 +142,13 @@ export default function Home() {
           setIsNotificationModalOpen(false);
         }}
         onMarkAsRead={handleMarkNotificationsAsRead}
+      />
+      <SearchModal
+        contacts={contacts}
+        isOpen={isSearchModalOpen}
+        onClose={() => {
+          setIsSearchModalOpen(false);
+        }}
       />
       <Balance balance={balance} />
       <Actions
