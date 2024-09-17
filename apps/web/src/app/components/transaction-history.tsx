@@ -6,16 +6,20 @@ interface Transaction {
   id: number;
   amount: number;
   date: Date;
+  description: string;
+  status: "completed" | "pending" | "failed";
 }
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
+  onTransactionClick: (transaction: Transaction) => void;
 }
 
 const TRANSACTIONS_PER_PAGE = 5;
 
 const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   transactions,
+  onTransactionClick,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [animate, setAnimate] = useState(false);
@@ -58,17 +62,26 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
       <div className="card">
         {visibleTransactions.map((tx) => (
           <div
-            className={`transaction-item px-4 ${animate ? "fade-in" : ""}`}
+            className="transaction-item px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors duration-150"
             key={tx.id}
+            onClick={() => {
+              onTransactionClick(tx);
+            }}
           >
-            <span className="text-sm text-text-secondary">
-              {formatDate(tx.date)}
-            </span>
-            <span
-              className={`font-semibold ${tx.amount > 0 ? "text-green-400" : "text-red-400"}`}
-            >
-              {formatAmount(tx.amount)}
-            </span>
+            <div className="flex justify-between items-center">
+              <span
+                className={`font-semibold ${
+                  tx.amount > 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {formatAmount(tx.amount)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center mt-1">
+              <span className="text-sm text-text-secondary">
+                {formatDate(tx.date)}
+              </span>
+            </div>
           </div>
         ))}
       </div>

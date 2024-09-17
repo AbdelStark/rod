@@ -8,13 +8,18 @@ import QuickSend from "./components/quick-send";
 import TransactionHistory from "./components/transaction-history";
 import NotificationModal from "./components/notification-modal";
 import SearchModal from "./components/search-modal";
+import TransactionModal from "./components/transaction-modal";
 
 interface Transaction {
   id: number;
   amount: number;
   date: Date;
+  description: string;
+  status: "completed" | "pending" | "failed";
+  recipient?: string;
+  sender?: string;
+  fee?: number;
 }
-
 interface Contact {
   handle: string;
   avatarUrl: string;
@@ -30,13 +35,64 @@ interface Notification {
 export default function Home() {
   const [balance, setBalance] = useState<number>(10860);
   const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: 1, amount: -100, date: new Date(Date.now() - 120000) },
-    { id: 2, amount: 100, date: new Date(Date.now() - 180000) },
-    { id: 3, amount: 100, date: new Date(Date.now() - 240000) },
-    { id: 4, amount: -55, date: new Date(Date.now() - 172800000) },
-    { id: 5, amount: 42, date: new Date(Date.now() - 1814400000) },
-    { id: 6, amount: -23, date: new Date(Date.now() - 1814600000) },
+    {
+      id: 1,
+      amount: -100,
+      date: new Date(Date.now() - 120000),
+      description: "Coffee",
+      status: "completed",
+      recipient: "@starbucks",
+      fee: 0,
+    },
+    {
+      id: 2,
+      amount: 100,
+      date: new Date(Date.now() - 180000),
+      description: "Refund",
+      status: "completed",
+      sender: "@amazon",
+      fee: 0,
+    },
+    {
+      id: 3,
+      amount: 100,
+      date: new Date(Date.now() - 240000),
+      description: "Gift from @vegeta",
+      status: "completed",
+      sender: "@vegeta",
+      fee: 0,
+    },
+    {
+      id: 4,
+      amount: -55,
+      date: new Date(Date.now() - 172800000),
+      description: "Movie tickets",
+      status: "completed",
+      recipient: "@cineplex",
+      fee: 0,
+    },
+    {
+      id: 5,
+      amount: 42,
+      date: new Date(Date.now() - 1814400000),
+      description: "Cashback",
+      status: "completed",
+      sender: "@creditcard",
+      fee: 0,
+    },
+    {
+      id: 6,
+      amount: -23,
+      date: new Date(Date.now() - 1814600000),
+      description: "Snacks",
+      status: "completed",
+      recipient: "@7eleven",
+      fee: 0,
+    },
   ]);
+
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
 
   const contacts: Contact[] = [
     { handle: "@gohan", avatarUrl: "/avatar/gohan.jpg" },
@@ -70,6 +126,14 @@ export default function Home() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  const handleCloseTransactionModal = () => {
+    setSelectedTransaction(null);
+  };
+
   const handleTransaction = (amount: number) => {
     setBalance((prevBalance) => prevBalance + amount);
     setTransactions((prevTransactions) => [
@@ -77,6 +141,8 @@ export default function Home() {
         id: prevTransactions.length + 1,
         amount,
         date: new Date(),
+        description: amount > 0 ? "Received" : "Sent",
+        status: "completed",
       },
       ...prevTransactions,
     ]);
@@ -158,7 +224,16 @@ export default function Home() {
         onSend={handleSend}
       />
       <QuickSend contacts={contacts} onSend={handleQuickSend} />
-      <TransactionHistory transactions={transactions} />
+      <TransactionHistory
+        onTransactionClick={handleTransactionClick}
+        transactions={transactions}
+      />
+      {selectedTransaction ? (
+        <TransactionModal
+          onClose={handleCloseTransactionModal}
+          transaction={selectedTransaction}
+        />
+      ) : null}{" "}
     </div>
   );
 }
