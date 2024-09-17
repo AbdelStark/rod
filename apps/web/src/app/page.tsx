@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/header";
 import Balance from "./components/balance";
 import Actions from "./components/actions";
@@ -9,6 +9,10 @@ import TransactionHistory from "./components/transaction-history";
 import NotificationModal from "./components/notification-modal";
 import SearchModal from "./components/search-modal";
 import TransactionModal from "./components/transaction-modal";
+import ReceiveModal from "./components/receive-modal";
+import { KEYS_STORAGE } from "./constants";
+import { generateNewMnemonic } from "@cashu/cashu-ts";
+import { useCashuStore } from "../store";
 
 interface Transaction {
   id: number;
@@ -91,6 +95,25 @@ export default function Home() {
     },
   ]);
 
+  const {mnemonic, setMnemonic} = useCashuStore()
+  useEffect(() => {
+    const checkMnemonic = () => {
+      if(typeof window == "undefined") return;
+
+
+      const mnemonic = window.localStorage.getItem(KEYS_STORAGE.MNEMONIC.toString())
+      console.log("mnemonic",mnemonic)
+
+      if(!mnemonic) {
+
+        const nMnemonic = generateNewMnemonic()
+        /** Encrypt mnemonic with a password? */
+        window.localStorage.setItem(KEYS_STORAGE.MNEMONIC.toString(), nMnemonic)
+        setMnemonic(nMnemonic)
+      }
+    }
+    checkMnemonic()
+  },[mnemonic, window])
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
@@ -124,6 +147,7 @@ export default function Home() {
   ]);
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const handleTransactionClick = (transaction: Transaction) => {
@@ -153,6 +177,7 @@ export default function Home() {
   };
   const handleReceive = () => {
     handleTransaction(100);
+    setIsReceiveModalOpen(true);
   };
   const handleScan = () => {
     console.log("Scanning QR code");
@@ -189,6 +214,8 @@ export default function Home() {
     );
   };
 
+
+
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -208,6 +235,15 @@ export default function Home() {
           setIsNotificationModalOpen(false);
         }}
         onMarkAsRead={handleMarkNotificationsAsRead}
+      />
+
+      <ReceiveModal
+        isOpen={isReceiveModalOpen}
+        notifications={notifications}
+        onClose={() => {
+          setIsReceiveModalOpen(false);
+        }}
+        onGenerateInvoice={handleMarkNotificationsAsRead}
       />
       <SearchModal
         contacts={contacts}
