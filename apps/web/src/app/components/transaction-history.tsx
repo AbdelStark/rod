@@ -32,7 +32,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
               {formatDate(tx.date)}
             </span>
             <span
-              className={`font-semibold ${tx.amount > 0 ? "text-green-500" : "text-red-500"}`}
+              className={`font-semibold ${tx.amount > 0 ? "text-green-400" : "text-red-400"}`}
             >
               {formatAmount(tx.amount)}
             </span>

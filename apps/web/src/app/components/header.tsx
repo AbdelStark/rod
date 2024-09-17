@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ userHandle, avatarUrl }) => {
         </div>
       </div>
       <button className="p-2 bg-card-background rounded-full">
-        <BellIcon className="w-6 h-6 text-text-primary" />
+        <BellIcon className="w-6 h-6 text-text-secondary" />
       </button>
     </div>
   );

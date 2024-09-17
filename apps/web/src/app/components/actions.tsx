@@ -24,9 +24,9 @@ const Actions: React.FC<ActionsProps> = ({
     label: string;
     onClick: () => void;
   }> = ({ icon, label, onClick }) => (
-    <button className="action-button" onClick={onClick}>
-      {icon}
-      <span>{label}</span>
+    <button className="flex flex-col items-center" onClick={onClick}>
+      <div className="action-button mb-2">{icon}</div>
+      <span className="text-xs text-text-secondary">{label}</span>
     </button>
   );
 

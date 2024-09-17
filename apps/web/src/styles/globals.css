@@ -5,9 +5,9 @@
 @tailwind utilities;
 
 :root {
-  --background-color: #1a1a1a;
-  --card-background: #252525;
-  --text-primary: #ffffff;
+  --background-color: #141414;
+  --card-background: #1e1e1e;
+  --text-primary: #e0e0e0;
   --text-secondary: #a0a0a0;
   --accent-color: #8b5cf6;
 }
@@ -24,19 +24,15 @@ body {
   }
 
   .action-button {
-    @apply flex flex-col items-center justify-center rounded-full w-16 h-16 bg-card-background shadow-md;
+    @apply flex items-center justify-center rounded-full w-14 h-14 bg-card-background shadow-md;
   }
 
   .action-button svg {
     @apply w-6 h-6 text-accent;
   }
 
-  .action-button span {
-    @apply text-xs mt-1 text-text-secondary;
-  }
-
   .transaction-item {
-    @apply flex justify-between items-center py-3 border-b border-gray-700 last:border-b-0;
+    @apply flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0;
   }
 
   .balance-text {
