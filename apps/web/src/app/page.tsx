@@ -25,6 +25,8 @@ export default function Home() {
     { id: 2, amount: 100, date: new Date(Date.now() - 180000) },
     { id: 3, amount: 100, date: new Date(Date.now() - 240000) },
     { id: 4, amount: -55, date: new Date(Date.now() - 172800000) },
+    { id: 5, amount: 42, date: new Date(Date.now() - 1814400000) },
+    { id: 6, amount: -23, date: new Date(Date.now() - 1814600000) },
   ]);
 
   const contacts: Contact[] = [
