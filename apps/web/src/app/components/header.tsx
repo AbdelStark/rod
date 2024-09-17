@@ -1,11 +1,16 @@
 import React from "react";
-import { BellIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import {
+  BellIcon,
+  Cog6ToothIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 
 interface HeaderProps {
   userHandle: string;
   avatarUrl: string;
   onNotificationClick: () => void;
   onSettingsClick: () => void;
+  onSearchClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -13,6 +18,7 @@ const Header: React.FC<HeaderProps> = ({
   avatarUrl,
   onNotificationClick,
   onSettingsClick,
+  onSearchClick,
 }) => {
   return (
     <div className="flex justify-between items-center mb-6">
@@ -30,6 +36,12 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
       <div className="flex space-x-2">
+        <button
+          className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
+          onClick={onSearchClick}
+        >
+          <MagnifyingGlassIcon className="w-6 h-6 text-text-secondary" />
+        </button>
         <button
           className="p-2 bg-card-background rounded-full transition-colors duration-200 hover:bg-opacity-80"
           onClick={onNotificationClick}

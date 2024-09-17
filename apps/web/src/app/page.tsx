@@ -4,12 +4,18 @@ import { useState } from "react";
 import Header from "./components/header";
 import Balance from "./components/balance";
 import Actions from "./components/actions";
+import QuickSend from "./components/quick-send";
 import TransactionHistory from "./components/transaction-history";
 
 interface Transaction {
   id: number;
   amount: number;
   date: Date;
+}
+
+interface Contact {
+  handle: string;
+  avatarUrl: string;
 }
 
 export default function Home() {
@@ -19,8 +25,15 @@ export default function Home() {
     { id: 2, amount: 100, date: new Date(Date.now() - 180000) },
     { id: 3, amount: 100, date: new Date(Date.now() - 240000) },
     { id: 4, amount: -55, date: new Date(Date.now() - 172800000) },
-    // Add more transactions here to test pagination
   ]);
+
+  const contacts: Contact[] = [
+    { handle: "@gohan", avatarUrl: "/avatar/gohan.jpg" },
+    { handle: "@vegeta", avatarUrl: "/avatar/vegeta.jpeg" },
+    { handle: "@frieza", avatarUrl: "/avatar/frieza.png" },
+    { handle: "@piccolo", avatarUrl: "/avatar/piccolo.jpg" },
+    { handle: "@cell", avatarUrl: "/avatar/cell.jpg" },
+  ];
 
   const handleTransaction = (amount: number) => {
     setBalance((prevBalance) => prevBalance + amount);
@@ -47,6 +60,11 @@ export default function Home() {
     console.log("Gift functionality");
   };
 
+  const handleQuickSend = (handle: string) => {
+    console.log(`Quick send to ${handle}`);
+    // Implement quick send functionality here
+  };
+
   const handleNotificationClick = () => {
     console.log("Notification button clicked");
     // Implement notification functionality here
@@ -57,12 +75,19 @@ export default function Home() {
     // Implement settings page navigation here
   };
 
+  const handleSearchClick = () => {
+    console.log("Search button clicked");
+    // Implement search functionality here
+  };
+
   return (
     <div className="max-w-md mx-auto p-6 min-h-screen">
       <Header
-        avatarUrl="/avatar.jpeg"
+        avatarUrl="/avatar/goku.jpeg"
         onNotificationClick={handleNotificationClick}
+        onSearchClick={handleSearchClick}
         onSettingsClick={handleSettingsClick}
+        userHandle="@goku"
         userHandle="@goku"
       />
       <Balance balance={balance} />
@@ -72,6 +97,7 @@ export default function Home() {
         onScan={handleScan}
         onSend={handleSend}
       />
+      <QuickSend contacts={contacts} onSend={handleQuickSend} />
       <TransactionHistory transactions={transactions} />
     </div>
   );
