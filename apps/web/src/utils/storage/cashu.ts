@@ -6,6 +6,7 @@ export const KEY_CASHU_STORE= {
   QUOTES:"QUOTES",
   TOKENS:"TOKENS",
   PROOFS:"PROOFS",
+  TRANSACTIONS:"TRANSACTIONS",
 
 }
 export const storeTokens= async (tokens:Token[]) => {
@@ -37,7 +38,7 @@ export const storeProofs= async (proofs:Proof[]) => {
 };
 
 
-export const getProofs= async (proofs:Proof[]) => {
+export const getProofs= async () => {
 
 
   return localStorage.getItem(KEY_CASHU_STORE.PROOFS);
@@ -54,4 +55,16 @@ export const getInvoices=  () => {
 export const storeInvoices= async (invoices:ICashuInvoice[]) => {
 
   return localStorage.setItem(KEY_CASHU_STORE.INVOICES, JSON.stringify(invoices));
+};
+
+
+export const getTransactions=  () => {
+
+  return localStorage.getItem(KEY_CASHU_STORE.TRANSACTIONS);
+};
+
+
+export const storeTransactions= async (transactions:ICashuInvoice[]) => {
+
+  return localStorage.setItem(KEY_CASHU_STORE.TRANSACTIONS, JSON.stringify(transactions));
 };

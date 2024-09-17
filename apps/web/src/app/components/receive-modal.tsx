@@ -47,6 +47,7 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
       date: new Date().getTime(),
       amount:amount?.toString(),
       mint:mintUrl,
+      quoteResponse:quote?.request,
     }
 
     if (invoicesLocal) {

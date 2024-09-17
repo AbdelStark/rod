@@ -5,6 +5,7 @@ import {
     Keys,
     MintKeys,
     MintKeyset,
+    GetInfoResponse,
 } from '@cashu/cashu-ts';
 import { useMemo, useState } from 'react';
 
@@ -30,23 +31,27 @@ export const useCashu = () => {
     const [keys, setKeys] = useState<Keys[]>()
     const [mintKeys, setMintKeys] = useState<MintKeys[]>()
     const [mintKeysset, setMintKeyset] = useState<MintKeys | undefined>()
+    const [mintInfo, setMintInfo] = useState<GetInfoResponse | undefined>()
 
     const cashuMint = useMemo(() => {
         return mint;
     }, [mint])
     const [walletCashu, setWallet] = useState<CashuWallet | undefined>(new CashuWallet(mint, {
-        mnemonicOrSeed: seed ?? mnemonic,
-        keys: mintKeysset
+        mnemonicOrSeed: mnemonic ?? mnemonic,
+        keys: mintKeysset,
+        // unit:"sat"
     }))
     const [proofs, setProofs] = useState<Proof[]>([])
     const [responseQuote, setResponseQuote] = useState<MintQuoteResponse | undefined>()
 
     const wallet = useMemo(() => {
-        return new CashuWallet(mint, {
-            mnemonicOrSeed: seed ?? mnemonic,
-            keys: mintKeysset
-        })
-    }, [walletCashu, mint, seed, mnemonic])
+        return walletCashu
+        // return new CashuWallet(mintUrl ? new CashuMint(mintUrl) : mint, {
+        //     mnemonicOrSeed: mnemonic ?? seed,
+        //     keys: mintKeysset,
+        //     // unit:"sat"
+        // })
+    }, [walletCashu, mint, seed, mnemonic, mintUrl])
 
 
     /** TODO saved in secure store */
@@ -78,6 +83,7 @@ export const useCashu = () => {
     const getMintInfo = async (mintUrl: string) => {
         const mintCashu = new CashuMint(mintUrl)
         const info = await mintCashu.getInfo();
+        setMintInfo(info)
         return info;
     }
 
@@ -149,7 +155,7 @@ export const useCashu = () => {
     const mintTokens = async (amount: number, quote: MintQuoteResponse) => {
 
         const proofs = await wallet?.mintTokens(amount, quote.quote)
-
+        console.log("proofs mint tokens",proofs)
         if (!proofs) return proofs;
         setProofs(proofs?.proofs)
         return proofs;
@@ -164,19 +170,31 @@ export const useCashu = () => {
 
 
     const meltTokens = async (invoice: string) => {
-        if (!wallet) return undefined;
-        const meltQuote = await wallet.createMeltQuote(invoice);
-        const amountToSend = meltQuote.amount + meltQuote.fee_reserve;
+        try {
+            if (!wallet) return undefined;
+            const meltQuote = await wallet.createMeltQuote(invoice);
+            console.log("meltQuote", meltQuote)
+            const amountToSend = meltQuote.amount + meltQuote.fee_reserve;
+            console.log("amountToSend", amountToSend)
 
-        // in a real wallet, we would coin select the correct amount of proofs from the wallet's storage
-        // instead of that, here we swap `proofs` with the mint to get the correct amount of proofs
-        const { returnChange: proofsToKeep, send: proofsToSend } = await wallet.send(amountToSend, proofs);
-        // store proofsToKeep in wallet ..
 
-        const meltResponse = await wallet.meltTokens(meltQuote, proofsToSend);
+            // const checkProofs = await wallet.checkProofsSpent(proofs)
+            // console.log("checkProofs", checkProofs)
+            // in a real wallet, we would coin select the correct amount of proofs from the wallet's storage
+            // instead of that, here we swap `proofs` with the mint to get the correct amount of proofs
+            const { returnChange: proofsToKeep, send: proofsToSend } = await wallet.send(amountToSend, proofs);
+            // store proofsToKeep in wallet ..
+            console.log("proofsToSend", proofsToSend)
 
-        return meltResponse;
+            const meltResponse = await wallet.meltTokens(meltQuote, proofsToSend);
+
+            return meltResponse;
+        } catch (e) {
+            console.log("Error meltTokens", e)
+        }
+
     }
+    
 
     const payLnInvoice = async (amount: number, request: MintQuoteResponse, proofs: Proof[]) => {
 

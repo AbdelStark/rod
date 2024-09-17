@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
 import { MintQuoteResponse } from "@cashu/cashu-ts";
@@ -26,39 +26,21 @@ const SendModal: React.FC<SendModalProps> = ({
   const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const { requestMintQuote } = useCashu()
-  const handleGenerate = async () => {
+  const { requestMintQuote, meltTokens } = useCashu()
+  const handlePayInvoice = async () => {
+    if (!invoice) return;
+    const tokens = await meltTokens(invoice)
+    console.log("tokens",tokens)
+
+
+  }
+
+  const handleMeltTokens = async () => {
     if (!amount) return;
-    const quote = await requestMintQuote(amount)
-    console.log("quote", quote)
-    setQuote(quote?.request)
+    if (!invoice) return;
+    const tokens = await meltTokens(invoice)
 
 
-    const invoicesLocal = await getInvoices()
-
-
-    const cashuInvoice: ICashuInvoice = {
-      bolt11: quote?.request?.request,
-      quote: quote?.request?.quote,
-      state: quote?.request?.state,
-      date: new Date().getTime(),
-      amount: amount?.toString(),
-      mint: mintUrl,
-    }
-
-    if (invoicesLocal) {
-      const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
-
-      console.log("invoices", invoices)
-      storeInvoices([...invoices, cashuInvoice])
-
-
-    } else {
-      console.log("no old invoicesLocal", invoicesLocal)
-
-      storeInvoices([cashuInvoice])
-
-    }
   }
   const handleChangeEcash = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -90,18 +72,49 @@ const SendModal: React.FC<SendModalProps> = ({
     <Dialog className="relative z-50" onClose={onClose} open={isOpen}>
       <div aria-hidden="true" className="fixed inset-0 bg-black/30" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-medium mb-4">
-            Invoice
-          </Dialog.Title>
-
-          <input
-            className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            onChange={handleChangeEcash}
-            type="text"
-            value={ecash}
+        <DialogPanel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
+          <button
+            className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+            onClick={onClose}
           >
-          </input>
+            Close
+          </button>
+          <DialogTitle className="text-lg font-medium mb-4">
+            Invoice
+          </DialogTitle>
+
+
+          <TabGroup>
+
+            <TabList className={"flex gap-5"}>
+              <Tab>Lightning</Tab>
+              <Tab>ecash</Tab>
+
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <input
+                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  onChange={handleChangeInvoice}
+                  type="text"
+                  value={invoice}
+                >
+                </input>
+              </TabPanel>
+
+              <TabPanel>
+                <input
+                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  onChange={handleChangeEcash}
+                  type="text"
+                  value={ecash}
+                >
+                </input>
+              </TabPanel>
+            </TabPanels>
+          </TabGroup>
+
+
           {/* 
           <input
             className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
@@ -123,20 +136,15 @@ const SendModal: React.FC<SendModalProps> = ({
             </button>
             <button
               className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            // onClick={handleGenerate}
+            onClick={handlePayInvoice}
             >
               Pay Lightning
             </button>
-            <button
-              className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-              onClick={onClose}
-            >
-              Close
-            </button>
+
           </div>
 
 
-        </Dialog.Panel>
+        </DialogPanel>
       </div>
     </Dialog>
   );

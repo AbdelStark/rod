@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { getInvoices, storeInvoices } from "../../utils/storage/cashu";
+import { getInvoices, getProofs, storeInvoices, storeProofs, storeTransactions } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { useCashu } from "../../hooks/useCashu";
 import { TypeToast, useToast } from "../../hooks/useToast";
-import { MintQuoteState } from "@cashu/cashu-ts";
+import { getEncodedToken, MintQuoteState, Proof } from "@cashu/cashu-ts";
 
 interface Transaction {
   id: number;
@@ -16,7 +16,7 @@ interface Transaction {
 }
 
 interface TransactionHistoryProps {
-  transactions: Transaction[];
+  transactions?: ICashuInvoice[];
   onTransactionClick: (transaction: Transaction) => void;
 }
 
@@ -27,7 +27,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
   onTransactionClick,
 }) => {
 
-  const { checkMintQuote } = useCashu()
+  const { wallet, mint, checkMintQuote, receiveP2PK, mintTokens } = useCashu()
   const { addToast } = useToast();
   const [invoices, setInvoices] = useState<ICashuInvoice[] | undefined>([])
 
@@ -49,7 +49,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 
   const totalPages = Math.ceil(totalInvoices / TRANSACTIONS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
-  const visibleInvoices = invoices?.slice(
+  const visibleInvoices = invoices?.reverse().slice(
     startIndex,
     startIndex + TRANSACTIONS_PER_PAGE,
   );
@@ -82,7 +82,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         console.log("invoices", invoices)
-        setInvoices(invoices.reverse())
+        setInvoices(invoices)
 
 
       }
@@ -103,14 +103,87 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
     }
     else if (check?.state == MintQuoteState.PAID) {
       addToast("Invoice is paid", TypeToast.success)
+      const invoice = invoices?.find((i) => i?.quote == quote)
+
+
       const invoicesUpdated = invoices?.map((i) => {
         if (i?.quote == quote) {
           i.state = MintQuoteState.PAID
+
           return i;
         }
         return i;
       }) ?? []
+
       storeInvoices(invoicesUpdated)
+      storeTransactions(invoicesUpdated)
+
+      if (invoice && invoice?.quote) {
+
+
+        const received = await handleReceivePaymentPaid(invoice)
+
+
+
+
+      }
+    }
+    else if (check?.state == MintQuoteState.ISSUED) {
+      addToast("Invoice is paid", TypeToast.success)
+      const invoice = invoices?.find((i) => i?.quote == quote)
+
+
+      const invoicesUpdated = invoices?.map((i) => {
+        if (i?.quote == quote) {
+          i.state = MintQuoteState.PAID
+
+          return i;
+        }
+        return i;
+      }) ?? []
+
+      storeInvoices(invoicesUpdated)
+      storeTransactions(invoicesUpdated)
+
+      if (invoice && invoice?.quote) {
+
+        const received = await handleReceivePaymentPaid(invoice)
+
+
+
+
+      }
+    }
+
+  }
+
+  const handleReceivePaymentPaid = async (invoice: ICashuInvoice) => {
+    if (invoice?.amount && invoice?.quoteResponse) {
+      const receive = await mintTokens(Number(invoice?.amount), invoice?.quoteResponse)
+      console.log("receive", receive)
+
+      const encoded = getEncodedToken({
+        token: [{ mint: mint?.mintUrl, proofs: receive?.proofs as Proof[] }]
+      });
+      // const response = await wallet?.receive(encoded);
+      const response = await receiveP2PK(encoded);
+
+
+      console.log("response", response)
+      const proofsLocal = await getProofs()
+      console.log("response", response)
+      if (!proofsLocal) {
+        setInvoices(invoices)
+        await storeProofs([...receive?.proofs as Proof[], ...response as Proof[]])
+      } else {
+        const proofs: Proof[] = JSON.parse(proofsLocal)
+        console.log("invoices", invoices)
+        setInvoices(invoices)
+        console.log("receive", receive)
+        await storeProofs([...proofs, ...receive?.proofs as Proof[], ...response as Proof[]])
+
+      }
+
 
     }
 
@@ -165,7 +238,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
               <div
                 className="p-1"
               >
-                <button onClick={() => handleCopy(invoice?.quote)}> Copy</button>
+                <button onClick={() => handleCopy(invoice?.bolt11)}> Copy</button>
 
               </div>
 
