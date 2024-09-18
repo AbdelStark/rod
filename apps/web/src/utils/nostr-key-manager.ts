@@ -18,7 +18,7 @@ export class NostrKeyManager {
     const storedPubKey = localStorage.getItem(NostrKeyManager.STORAGE_KEY);
 
     if (storedPubKey) {
-      const {secretKey, mnemonic} = await this.retrieveSecretKey(storedPubKey);
+      const { secretKey, mnemonic } = await this.retrieveSecretKey(storedPubKey);
       return { secretKey, publicKey: storedPubKey, mnemonic };
     }
     return this.createAndStoreKeyPair();
@@ -30,14 +30,23 @@ export class NostrKeyManager {
     return storedPubKey;
   }
 
-  static getIsWalletSetup() {
-    const isWalletSetup = localStorage.getItem(NostrKeyManager.IS_WALLET_SETUP);
+  static async getDecryptedPrivateKey(): Promise<{
+    secretKey: string;
+    publicKey: string;
+    mnemonic: string;
+  } | undefined> {
+    const storedPubKey = localStorage.getItem(NostrKeyManager.STORAGE_KEY);
 
-    console.log("isWalletSetup",isWalletSetup)
-    return isWalletSetup;
+    if (storedPubKey) {
+      const { secretKey, mnemonic } = await this.sessionRetrieveEncryptedData(storedPubKey);
+      return { secretKey, publicKey: storedPubKey, mnemonic };
+    }
   }
 
-
+  static getIsWalletSetup() {
+    const isWalletSetup = localStorage.getItem(NostrKeyManager.IS_WALLET_SETUP);
+    return isWalletSetup;
+  }
 
   private static async createAndStoreKeyPair(): Promise<{
     secretKey: string;
@@ -46,7 +55,7 @@ export class NostrKeyManager {
   }> {
     const secretKey = generatePrivateKey();
     const publicKey = getPublicKey(secretKey);
-    const mnemonic= generateNewMnemonic()
+    const mnemonic = generateNewMnemonic()
 
     await this.storeSecretKey(secretKey, publicKey, mnemonic);
     localStorage.setItem(NostrKeyManager.STORAGE_KEY, publicKey);
@@ -57,7 +66,7 @@ export class NostrKeyManager {
   private static async storeSecretKey(
     secretKey: string,
     publicKey: string,
-    mnemonic:string
+    mnemonic: string
   ): Promise<void> {
     const encoder = new TextEncoder();
     const credential = await navigator.credentials.create({
@@ -76,26 +85,26 @@ export class NostrKeyManager {
     if (credential && credential.type === "public-key") {
       const pkCred = credential as PublicKeyCredential;
       const rawId = Array.from(new Uint8Array(pkCred.rawId));
-      
+
       // Generate a random salt
       const salt = crypto.getRandomValues(new Uint8Array(16));
-      
+
       // Encrypt the secret key
       const encryptedKey = await this.encryptSecretKey(secretKey, rawId, salt);
-      console.log("encryptedkey",encryptedKey)
+      console.log("encryptedkey", encryptedKey)
 
       const encryptedMnemonic = await this.encryptSecretKey(mnemonic, rawId, salt);
-      console.log("encryptedMnemonic",encryptedMnemonic)
+      console.log("encryptedMnemonic", encryptedMnemonic)
 
       localStorage.setItem(
         `${NostrKeyManager.CRED_KEY_PREFIX}${publicKey}`,
-         JSON.stringify({ rawId, encryptedKey, mnemonic:encryptedMnemonic })
-       );
-       localStorage.setItem(
-         `${NostrKeyManager.SALT_KEY_PREFIX}${publicKey}`,
-         JSON.stringify(Array.from(salt))
-       );
-       localStorage.setItem(
+        JSON.stringify({ rawId, encryptedKey, mnemonic: encryptedMnemonic })
+      );
+      localStorage.setItem(
+        `${NostrKeyManager.SALT_KEY_PREFIX}${publicKey}`,
+        JSON.stringify(Array.from(salt))
+      );
+      localStorage.setItem(
         `${NostrKeyManager.IS_WALLET_SETUP}`,
         "true"
       );
@@ -106,8 +115,8 @@ export class NostrKeyManager {
   }
 
   private static async retrieveSecretKey(publicKey: string): Promise<{
-    secretKey:string,
-    mnemonic:string
+    secretKey: string,
+    mnemonic: string
   }> {
     const storedCred = localStorage.getItem(`nostr_cred_${publicKey}`);
     const storedSalt = localStorage.getItem(`${NostrKeyManager.SALT_KEY_PREFIX}${publicKey}`);
@@ -130,10 +139,10 @@ export class NostrKeyManager {
     });
 
     if (assertion && assertion.type === "public-key") {
-      const decryptedPrivateKey= await this.decryptSecretKey(encryptedKey, rawId, salt);
-      const decryptedMnemonic= await this.decryptSecretKey(mnemonic, rawId, salt);
+      const decryptedPrivateKey = await this.decryptSecretKey(encryptedKey, rawId, salt);
+      const decryptedMnemonic = await this.decryptSecretKey(mnemonic, rawId, salt);
 
-      return {secretKey:decryptedPrivateKey, mnemonic};
+      return { secretKey: decryptedPrivateKey, mnemonic: decryptedMnemonic };
     }
     throw new Error("Failed to retrieve credential");
   }
@@ -211,8 +220,27 @@ export class NostrKeyManager {
     );
 
     const decoder = new TextDecoder();
-    const decryptedPrivateKey= decoder.decode(decryptedData);
+    const decryptedPrivateKey = decoder.decode(decryptedData);
     return decryptedPrivateKey
+  }
+
+
+  private static async sessionRetrieveEncryptedData(publicKey: string): Promise<{
+    secretKey: string,
+    mnemonic: string
+  }> {
+    const storedCred = localStorage.getItem(`nostr_cred_${publicKey}`);
+    const storedSalt = localStorage.getItem(`${NostrKeyManager.SALT_KEY_PREFIX}${publicKey}`);
+    if (!storedCred || !storedSalt) throw new Error("No stored credential or salt found");
+
+    const { rawId, encryptedKey, mnemonic } = JSON.parse(storedCred);
+    const encoder = new TextEncoder();
+    const salt = new Uint8Array(JSON.parse(storedSalt));
+
+    const decryptedPrivateKey = await this.decryptSecretKey(encryptedKey, rawId, salt);
+    const decryptedMnemonic = await this.decryptSecretKey(mnemonic, rawId, salt);
+
+    return { secretKey: decryptedPrivateKey, mnemonic: decryptedMnemonic };
   }
 
 }

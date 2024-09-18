@@ -54,8 +54,6 @@ export default function NWCWallet() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
-  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -66,6 +64,13 @@ export default function NWCWallet() {
   // }, []);
   async function initializeNostrConnect() {
     try {
+
+      const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
+      console.log("isWalletSetup", isWalletSetup)
+
+      if (isWalletSetup && isWalletSetup == "true") {
+        return router.push("/onboarding")
+      }
 
       const { secretKey, publicKey, mnemonic } =
         await NostrKeyManager.getOrCreateKeyPair();

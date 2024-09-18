@@ -21,6 +21,9 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import InvoicesHistory from "./components/invoices-history";
 import SendModal from "./components/send-modal";
 import { useRouter } from "next/navigation";
+import { TypeToast, useToast } from "../hooks/useToast";
+import { Proof } from "@cashu/cashu-ts";
+import { getProofs, storeProofs } from "../utils/storage/cashu";
 
 interface Transaction {
   id: number;
@@ -92,16 +95,52 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [connect, setConnect] = useState<Connect | null>(null);
 
+  const { wallet } = useCashu()
+  const { addToast } = useToast()
+
+  const getProofsWalletAndBalance = async () => {
+    const proofsLocal = await getProofs()
+    if (proofsLocal) {
+      /** TODO clean proofs */
+      let proofs: Proof[] = JSON.parse(proofsLocal)
+      const proofsSpent = await wallet?.checkProofsSpent(proofs)
+      // console.log("proofsSpent", proofsSpent)
+      proofs = proofs?.filter((p) => {
+        if (!proofsSpent?.includes(p)) {
+          return p;
+        }
+      })
+      // console.log("proofs", proofs)
+      // await storeProofs(proofs)
+      const proofsToUsed: Proof[] = []
+      const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
+      console.log("totalAmount", totalAmount)
+      setBalance(totalAmount)
+
+    }
+  }
   const checkWalletSetup = async () => {
-    console.log("checkWalletSetup",)
+    console.log("checkWalletSetup")
 
     const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
     console.log("isWalletSetup", isWalletSetup)
 
+    if (isConnected) return;
+
     if (isWalletSetup && isWalletSetup == "true") {
-      setIsConnected(true)
-    }
-    else if(!isWalletSetup) {
+      const result = await NostrKeyManager.getDecryptedPrivateKey()
+      if (!result) {
+
+      } else {
+        const { secretKey, mnemonic, publicKey } = result
+        setAuth(publicKey, secretKey,)
+        setMnemonic(mnemonic)
+        addToast({ title: "GM! Connected successfully", type: TypeToast.success })
+        setIsConnected(true)
+        await getProofsWalletAndBalance()
+      }
+
+    } else if (!isWalletSetup) {
       return router.push("/onboarding")
 
     }
@@ -110,6 +149,8 @@ export default function Home() {
     checkWalletSetup()
     // initializeNostrConnect();
   }, [isConnected]);
+
+
   async function initializeNostrConnect() {
     try {
 
@@ -170,11 +211,9 @@ export default function Home() {
   };
 
   const handleSend = () => {
-    handleTransaction(-100);
     setIsSendModalOpen(true)
   };
   const handleReceive = () => {
-    handleTransaction(100);
     setIsReceiveModalOpen(true);
   };
   const handleScan = () => {

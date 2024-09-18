@@ -43,6 +43,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   const totalPages = Math.ceil(totalInvoices / TRANSACTIONS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
   const visibleTransactions = txInvoices?.reverse().slice(
+    // const visibleTransactions = txInvoices?.reverse().slice(
     startIndex,
     startIndex + TRANSACTIONS_PER_PAGE,
   );
@@ -72,8 +73,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         const invoicesPaid = invoices.filter((i) => i?.state == MintQuoteState?.ISSUED || i?.state == MintQuoteState.PAID)
-        setTxInvoices(invoicesPaid)
-
+        setTxInvoices(invoicesPaid?.reverse())
 
       }
     }

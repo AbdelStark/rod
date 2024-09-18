@@ -77,4 +77,5 @@ export const addProofs = async (proofsToAdd:Proof[]) => {
     const proofs: Proof[] = JSON.parse(proofsLocal)
     await storeProofs([...proofs, ...proofsToAdd as Proof[]])
   }
+
 }

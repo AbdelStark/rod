@@ -49,7 +49,8 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 
   const totalPages = Math.ceil(totalInvoices / TRANSACTIONS_PER_PAGE);
   const startIndex = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
-  const visibleInvoices = invoices?.reverse().slice(
+  const visibleInvoices = invoices?.slice(
+    // const visibleInvoices = invoices?.reverse().slice(
     startIndex,
     startIndex + TRANSACTIONS_PER_PAGE,
   );
@@ -74,16 +75,13 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 
   useEffect(() => {
 
-
     const handleGetInvoices = async () => {
       const invoicesLocal = await getInvoices()
-
 
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         console.log("invoices", invoices)
-        setInvoices(invoices)
-
+        setInvoices(invoices?.reverse())
 
       }
     }
@@ -105,7 +103,6 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       addToast({ title: "Invoice is paid", type: TypeToast.success })
       const invoice = invoices?.find((i) => i?.quote == quote)
 
-
       const invoicesUpdated = invoices?.map((i) => {
         if (i?.quote == quote) {
           i.state = MintQuoteState.PAID
@@ -120,11 +117,11 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 
       if (invoice && invoice?.quote) {
 
-
         const received = await handleReceivePaymentPaid(invoice)
 
-
-
+        if (received) {
+          addToast({ title: "Payment received", type: TypeToast.success })
+        }
 
       }
     }
@@ -134,7 +131,6 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       const invoicesUpdated = invoices?.map((i) => {
         if (i?.quote == quote) {
           i.state = MintQuoteState.PAID
-
           return i;
         }
         return i;
@@ -143,6 +139,9 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       storeTransactions(invoicesUpdated)
       if (invoice && invoice?.quote) {
         const received = await handleReceivePaymentPaid(invoice)
+        if (received) {
+          addToast({ title: "Received", type: TypeToast.success })
+        }
       }
     }
 
@@ -158,8 +157,6 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       });
       // const response = await wallet?.receive(encoded);
       const response = await receiveP2PK(encoded);
-
-
       console.log("response", response)
       const proofsLocal = await getProofs()
       console.log("response", response)
@@ -172,10 +169,9 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
         setInvoices(invoices)
         console.log("receive", receive)
         await storeProofs([...proofs, ...receive?.proofs as Proof[], ...response as Proof[]])
-
       }
 
-
+      return response;
     }
 
   }

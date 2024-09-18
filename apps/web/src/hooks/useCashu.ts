@@ -8,6 +8,7 @@ import {
     GetInfoResponse,
     MeltTokensResponse,
     MeltQuoteResponse,
+    getDecodedToken,
 } from '@cashu/cashu-ts';
 import { useMemo, useState } from 'react';
 
@@ -320,8 +321,6 @@ export const useCashu = () => {
 
     }
 
-
-
     const checkMintQuote = async (quote: string) => {
         try {
             if (!wallet) return undefined;
@@ -336,6 +335,40 @@ export const useCashu = () => {
         }
 
     }
+
+    const receiveEcash = async (ecash: string) => {
+
+        if (!ecash) {
+            return;
+        }
+        const encoded = getDecodedToken(ecash)
+        console.log("encoded", encoded)
+
+
+        const response = await wallet?.receive(encoded);
+        console.log("response", response)
+
+        if (response) {
+        }
+    }
+
+
+    const handleReceivedPayment = async (amount:number, quote:MintQuoteResponse) => {
+        const receive = await mintTokens(Number(amount), quote)
+        console.log("receive", receive)
+
+        const encoded = getEncodedToken({
+            token: [{ mint: mint?.mintUrl, proofs: receive?.proofs as Proof[] }]
+        });
+        // const response = await wallet?.receive(encoded);
+        const response = await receiveP2PK(encoded);
+
+        console.log("response", response)
+     
+        return response;
+
+    }
+
     return {
         wallet,
         mint,
@@ -359,7 +392,9 @@ export const useCashu = () => {
         getMintInfo,
         checkMeltQuote,
         checkMintQuote,
-        checkProofSpent
+        checkProofSpent,
+        receiveEcash,
+        handleReceivedPayment
 
     }
 
