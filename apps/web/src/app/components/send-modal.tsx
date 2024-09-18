@@ -2,10 +2,11 @@ import React, { ChangeEvent, useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
-import { MintQuoteResponse, Proof } from "@cashu/cashu-ts";
-import { getInvoices, getProofs, storeInvoices } from "../../utils/storage/cashu";
+import { getDecodedToken, getEncodedTokenV4, MintQuoteResponse, Proof, Token } from "@cashu/cashu-ts";
+import { getInvoices, getProofs, storeInvoices, addProofs } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MINTS_URLS } from "../../utils/relay";
+import { TypeToast, useToast } from "../../hooks/useToast";
 
 
 interface SendModalProps {
@@ -20,59 +21,166 @@ const SendModal: React.FC<SendModalProps> = ({
   onGenerateInvoice,
 }) => {
 
+  const { addToast } = useToast()
   const [amount, setAmount] = useState<number | undefined>()
   const [ecash, setEcash] = useState<string | undefined>()
   const [invoice, setInvoice] = useState<string | undefined>()
   const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const { requestMintQuote, meltTokens, payLnInvoice } = useCashu()
+  const { requestMintQuote, meltTokens, payLnInvoice, sendP2PK, wallet } = useCashu()
   const handlePayInvoice = async () => {
     if (!invoice) return;
     const proofsLocal = await getProofs()
 
-    if(proofsLocal) {
+    if (proofsLocal) {
       let proofs: Proof[] = JSON.parse(proofsLocal)
-      console.log("proofs",proofs)
+      console.log("proofs", proofs)
 
       // Filter proofs to spent
       const lenProof = proofs?.length
       // proofs.slice(lenProof-3, lenProof)
       // const proofsKey  = proofs?.filter((p ) => p?.amount == )
-      const tokens = await meltTokens(invoice, proofs?.slice(lenProof-1, lenProof))
-      console.log("tokens",tokens)
-  
+      const tokens = await meltTokens(invoice, proofs?.slice(lenProof - 1, lenProof))
+      console.log("tokens", tokens)
+
     } else {
 
       const tokens = await meltTokens(invoice)
-      console.log("tokens",tokens)
-  
+      console.log("tokens", tokens)
+
     }
 
 
   }
 
-  const handleMeltTokens = async () => {
-    if (!amount) return;
-    if (!invoice) return;
-    const tokens = await meltTokens(invoice)
+  const handleGenerateEcash = async () => {
+    if (!amount) {
+      addToast("Please add a mint amount", TypeToast.warning)
+
+      return;
+    }
+
+    if (!wallet) {
+      addToast("Please connect your wallet", TypeToast.error)
+
+      return;
+    }
+
+    const proofsLocal = await getProofs()
+
+
+
+
+    if (proofsLocal) {
+
+      let proofs: Proof[] = JSON.parse(proofsLocal)
+      console.log("proofs", proofs)
+
+      const proofsToUsed: Proof[] = []
+      const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
+
+
+      let amountCounter = 0;
+      for (let p of proofs) {
+
+        amountCounter += p?.amount;
+        proofsToUsed.push(p)
+
+        if (amountCounter >= amount) {
+          break;
+        }
+      }
+
+      const sendCashu = await wallet?.send(amount, proofsToUsed)
+      console.log("sendCashu", sendCashu)
+
+      if (sendCashu) {
+        const keysets = await wallet?.mint?.getKeySets()
+        // unit of keysets
+        let unit = keysets?.keysets[0].unit;
+
+        const token = {
+          token: [{ proofs: proofsToUsed, mint: wallet?.mint?.mintUrl }],
+          // unit: unit,
+        } as Token;
+        console.log("keysets", keysets)
+        console.log("proofsToUsed", proofsToUsed)
+        console.log("token", token)
+
+        const cashuToken = getEncodedTokenV4(token)
+        console.log("cashuToken", cashuToken)
+
+        addToast("Cashu created", TypeToast?.success)
+
+
+      }
+
+    }
 
 
   }
+
+  const handlePayEcash = async () => {
+    const proofsLocal = await getProofs()
+
+    if (proofsLocal) {
+      let proofs: Proof[] = JSON.parse(proofsLocal)
+      console.log("proofs", proofs)
+
+
+
+
+    } else {
+      if (!ecash) {
+        return;
+      }
+      const encoded = getDecodedToken(ecash)
+      console.log("encoded", encoded)
+
+      const allProofs = encoded.token?.map((t) => t?.proofs)
+
+      let totalAmount = 0
+      allProofs?.map((pT) => pT?.map((p) => {
+        totalAmount += p?.amount
+      }))
+      console.log("totalAmount", totalAmount)
+
+      const response = await wallet?.send(totalAmount, encoded?.token[0]?.proofs);
+      console.log("response", response)
+
+      if (response) {
+        addToast("ecash payment received", TypeToast.success)
+        await addProofs(response?.returnChange)
+      }
+
+    }
+  }
+
   const handleChangeEcash = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    const numberValue = parseFloat(value);
-    setInvoice(value);
+    setEcash(value);
 
   };
 
   const handleChangeInvoice = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    const numberValue = parseFloat(value);
-    console.log("numberValue", numberValue)
     setInvoice(value);
 
   };
+
+  const handleChangeAmount = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const numberValue = parseFloat(value);
+    console.log("numberValue", numberValue)
+
+    // Update changeSet only if the input is a valid number
+    if (!isNaN(numberValue)) {
+      setAmount(numberValue);
+    }
+
+  };
+
 
 
   const handleCopy = async () => {
@@ -117,16 +225,50 @@ const SendModal: React.FC<SendModalProps> = ({
                   value={invoice}
                 >
                 </input>
+
+
+                <div className="mt-4 flex justify-between">
+
+
+                  <button
+                    className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                    onClick={handlePayInvoice}
+                  >
+                    Pay Lightning
+                  </button>
+
+                </div>
               </TabPanel>
 
               <TabPanel>
+
                 <input
+                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  onChange={handleChangeAmount}
+                  type="number"
+                  value={amount}
+                >
+                </input>
+
+
+                {/* <input
                   className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChangeEcash}
                   type="text"
                   value={ecash}
                 >
-                </input>
+                </input> */}
+
+                <div className="mt-4 flex justify-between">
+
+                  <button
+                    className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                    onClick={handleGenerateEcash}
+                  >
+                    Generate eCash
+                  </button>
+
+                </div>
               </TabPanel>
             </TabPanels>
           </TabGroup>
@@ -141,24 +283,6 @@ const SendModal: React.FC<SendModalProps> = ({
           >
           </input> */}
 
-
-          <div className="mt-4 flex justify-between">
-
-
-            <button
-              className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            // onClick={handleGenerate}
-            >
-              Pay eCash
-            </button>
-            <button
-              className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            onClick={handlePayInvoice}
-            >
-              Pay Lightning
-            </button>
-
-          </div>
 
 
         </DialogPanel>

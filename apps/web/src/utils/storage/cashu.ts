@@ -68,3 +68,13 @@ export const storeTransactions= async (transactions:ICashuInvoice[]) => {
 
   return localStorage.setItem(KEY_CASHU_STORE.TRANSACTIONS, JSON.stringify(transactions));
 };
+
+export const addProofs = async (proofsToAdd:Proof[]) => {
+  const proofsLocal = await getProofs()
+  if (!proofsLocal) {
+    await storeProofs([...proofsToAdd as Proof[]])
+  } else {
+    const proofs: Proof[] = JSON.parse(proofsLocal)
+    await storeProofs([...proofs, ...proofsToAdd as Proof[]])
+  }
+}

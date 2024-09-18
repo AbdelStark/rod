@@ -37,7 +37,7 @@ export const useCashu = () => {
     const [walletCashu, setWallet] = useState<CashuWallet | undefined>(new CashuWallet(mint, {
         mnemonicOrSeed: mnemonic ?? seed,
         keys: mintKeysset,
-        // unit:"sat"
+        unit:mintKeysset?.unit
     }))
     const [proofs, setProofs] = useState<Proof[]>([])
     const [responseQuote, setResponseQuote] = useState<MintQuoteResponse | undefined>()
