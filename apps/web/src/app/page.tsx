@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { TypeToast, useToast } from "../hooks/useToast";
 import { Proof } from "@cashu/cashu-ts";
 import { addProofsSpent, getProofs, storeProofs, updateProofsSpent } from "../utils/storage/cashu";
+import SendModal from "./components/send-modal";
 
 interface Transaction {
   id: number;
@@ -89,8 +90,8 @@ export default function Home() {
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [connect, setConnect] = useState<Connect | null>(null);
@@ -177,8 +178,23 @@ export default function Home() {
   };
 
   const handleSend = () => {
+    setIsSendModalOpen(true);
+  };
+
+  const handleSendConfirm = (amount: number, recipient: string) => {
+    handleTransaction(-amount);
+    setNotifications((prevNotifications) => [
+      {
+        id: prevNotifications.length + 1,
+        message: `You sent ${amount} sats to ${recipient}`,
+        date: new Date(),
+        read: false,
+      },
+      ...prevNotifications,
+    ]);
     setIsSendModalOpen(true)
   };
+
   const handleReceive = () => {
     setIsReceiveModalOpen(true);
   };
@@ -307,6 +323,14 @@ export default function Home() {
           }}
         />
       ) : null}
+      <SendModal
+        contacts={contacts}
+        isOpen={isSendModalOpen}
+        onClose={() => {
+          setIsSendModalOpen(false);
+        }}
+        onSend={handleSendConfirm}
+      />
     </div>
   );
 }
