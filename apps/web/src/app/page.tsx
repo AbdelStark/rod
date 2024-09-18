@@ -124,10 +124,8 @@ export default function Home() {
     }
   }
   const checkWalletSetup = async () => {
-    console.log("checkWalletSetup")
 
     const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
-    console.log("isWalletSetup", isWalletSetup)
 
     if (isConnected) return;
 
@@ -155,42 +153,6 @@ export default function Home() {
   }, [isConnected]);
 
 
-  async function initializeNostrConnect() {
-    try {
-
-      const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
-      console.log("isWalletSetup", isWalletSetup)
-
-      if (isWalletSetup && isWalletSetup == "true") {
-        return router.push("/onboarding")
-      }
-
-      const { secretKey, publicKey, mnemonic } =
-        await NostrKeyManager.getOrCreateKeyPair();
-      console.log("Nostr keypair ready:", { publicKey });
-      setAuth(publicKey, secretKey,)
-      setMnemonic(mnemonic)
-
-      const newConnect = new Connect({
-        secretKey,
-        relay: "wss://nostr.vulpem.com",
-      });
-      newConnect.events.on("connect", (walletPubkey: string) => {
-        console.log("Connected with wallet:", walletPubkey);
-      });
-      await newConnect.init();
-
-
-      const { mint, keys } = await connectCashMint(MINTS_URLS.MINIBITS)
-      console.log("cashuMint", mint)
-      const wallet = await connectCashWallet(mint, keys[0])
-      console.log("wallet", wallet)
-
-      setConnect(newConnect);
-    } catch (error) {
-      console.error("Error initializing Nostr keypair:", error);
-    }
-  }
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -254,8 +216,6 @@ export default function Home() {
     );
   };
 
-
-
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -310,9 +270,6 @@ export default function Home() {
         <TabList className={"flex gap-5"}>
           <Tab
             className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
-          // className={`px-4 py-2 -mb-px border-b-2 transition-colors duration-300
-          //   data-[selected]:bg-blue-500  border-transparent text-gray-500 hover:text-blue-500
-          // }`}
           >Invoices</Tab>
           <Tab
             className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"

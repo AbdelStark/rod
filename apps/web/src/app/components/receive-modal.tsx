@@ -122,7 +122,7 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
             <DialogTitle className="text-lg font-medium mb-4">
               Invoice
             </DialogTitle>
-        
+
           </div>
 
 
@@ -202,6 +202,13 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
 
                     onClick={handleReceiveEcash}
                   >Receive ecash</button>
+
+                  <button
+                    className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                    onClick={onClose}
+                  >
+                    Close
+                  </button>
                 </div>
 
               </TabPanel>

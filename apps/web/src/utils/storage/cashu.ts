@@ -17,7 +17,7 @@ export const storeTokens = async (tokens: Token[]) => {
 
 export const getTokens = async () => {
 
-  return localStorage.getItem(KEY_CASHU_STORE.PROOFS);
+  return localStorage.getItem(KEY_CASHU_STORE.TOKENS);
 };
 
 
