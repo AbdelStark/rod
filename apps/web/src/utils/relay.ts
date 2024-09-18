@@ -14,7 +14,7 @@ export const RELAYS_TEST = ['wss://relay.n057r.club', 'wss://relay.nostr.net'];
 export const RELAY_AFK_PRODUCTION = 'wss://nostr-relay-nestjs-production.up.railway.app';
 
 export const ROD_RELAYS =
-  process.env.NODE_ENV == 'production' || process.env.NEXT_PUBLIC_NODE_ENV == "production"
+  process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_NODE_ENV === "production"
     ? [
       'wss://nostr-relay-nestjs-production.up.railway.app',
       ...RELAYS_PROD,

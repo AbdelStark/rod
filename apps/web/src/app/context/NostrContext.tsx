@@ -15,7 +15,6 @@ export type NostrContextType = {
 export const NostrContext = createContext<NostrContextType | null>(null);
 export const NostrProvider: React.FC<React.PropsWithChildren> = ({children}) => {
   const privateKey = useAuth((state) => state.privateKey);
-  const publicKey = useAuth((state) => state.publicKey);
   const isExtension = useAuth((state) => state.isExtension);
   const nwcUrl = useAuth((state) => state.nwcUrl);
   const relays = useSettingsStore((state) => state.relays);
@@ -32,11 +31,6 @@ export const NostrProvider: React.FC<React.PropsWithChildren> = ({children}) => 
   const [nwcNdk, setNWCNdk] = useState<NDKNwc|undefined>(undefined);
 
   const nip07Signer = new NDKNip07Signer();
-  const [ndkExtension, setNdkExtension] = useState<NDK>(
-    new NDK({
-      explicitRelayUrls: relays ?? ROD_RELAYS,
-    }),
-  );
 
   useEffect(() => {
     const newNdk = new NDK({

@@ -4,6 +4,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface Toast {
   id: number;
   title: string;
+  description?:string;
   type?: TypeToast | string
 }
 export enum TypeToast {
@@ -27,7 +28,7 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = ({title, description, type}:AddToast) => {
+  const addToast = ({title, type}:AddToast) => {
     const id = Date.now();
     setToasts((prevToasts) => [...prevToasts, { id, title, type }]);
     // Remove the toast automatically after 3 seconds

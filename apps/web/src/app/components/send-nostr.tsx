@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Dialog } from "@headlessui/react";
 import { NostrKeyManager } from "../../utils/nostr-key-manager";
 import { CONTACTS_DATA } from "../constants/data";
 
@@ -17,7 +16,7 @@ const SendNostr: React.FC<SendModalProps> = ({
 }) => {
 
 
-  const [contacts, setContacts] = useState<Contact[]>(CONTACTS_DATA)
+  const [contacts, _] = useState<Contact[]>(CONTACTS_DATA)
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [step, setStep] = useState<"amount" | "recipient" | "confirm">(
@@ -60,9 +59,9 @@ const SendNostr: React.FC<SendModalProps> = ({
 
         {step === "amount" && (
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
+            <p className="block text-sm font-medium text-text-secondary mb-2">
               Amount (sats)
-            </label>
+            </p>
             <input
               className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
               onChange={(e) => {

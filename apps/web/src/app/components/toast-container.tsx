@@ -1,7 +1,7 @@
 import { TypeToast, useToast } from "../../hooks/useToast";
 
 const ToastContainer = () => {
-    const { toasts, removeToast } = useToast();
+    const { toasts } = useToast();
 
     return (
         <div

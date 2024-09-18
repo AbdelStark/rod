@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -38,10 +38,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     <Dialog className="relative z-50" onClose={onClose} open={isOpen}>
       <div aria-hidden="true" className="fixed inset-0 bg-black/80" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-md rounded-2xl bg-gray-900 p-6 text-white">
-          <Dialog.Title className="text-lg font-medium mb-4">
+        <DialogPanel className="w-full max-w-md rounded-2xl bg-gray-900 p-6 text-white">
+          <DialogTitle className="text-lg font-medium mb-4">
             Settings
-          </Dialog.Title>
+          </DialogTitle>
 
           <div className="space-y-6">
             {/* Backup seed phrase */}
@@ -170,7 +170,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           >
             Close
           </button>
-        </Dialog.Panel>
+        </DialogPanel>
       </div>
     </Dialog>
   );

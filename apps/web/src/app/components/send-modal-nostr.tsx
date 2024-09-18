@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { Dialog } from "@headlessui/react";
-import { NostrKeyManager } from "../../utils/nostr-key-manager";
 import SendNostr from "./send-nostr";
 
 interface Contact {

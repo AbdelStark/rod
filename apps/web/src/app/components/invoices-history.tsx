@@ -6,14 +6,7 @@ import { ICashuInvoice } from "../../types/wallet";
 import { useCashu } from "../../hooks/useCashu";
 import { TypeToast, useToast } from "../../hooks/useToast";
 import { getEncodedToken, MintQuoteState, Proof } from "@cashu/cashu-ts";
-
-interface Transaction {
-  id: number;
-  amount: number;
-  date: Date;
-  description: string;
-  status: "completed" | "pending" | "failed";
-}
+import { Transaction } from "../../types";
 
 interface TransactionHistoryProps {
   transactions?: ICashuInvoice[];
@@ -23,16 +16,14 @@ interface TransactionHistoryProps {
 const TRANSACTIONS_PER_PAGE = 5;
 
 const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
-  transactions,
-  onTransactionClick,
 }) => {
 
-  const { wallet, mint, checkMintQuote, receiveP2PK, mintTokens } = useCashu()
+  const {  mint, checkMintQuote, receiveP2PK, mintTokens } = useCashu()
   const { addToast } = useToast();
   const [invoices, setInvoices] = useState<ICashuInvoice[] | undefined>([])
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [animate, setAnimate] = useState(false);
+  const [_, setAnimate] = useState(false);
 
   const totalInvoices = useMemo(() => {
 
@@ -76,7 +67,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
   useEffect(() => {
 
     const handleGetInvoices = async () => {
-      const invoicesLocal = await getInvoices()
+      const invoicesLocal = getInvoices()
 
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
@@ -96,15 +87,15 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
     console.log("quote", quote)
     const check = await checkMintQuote(quote)
     console.log("check", check)
-    if (check?.state == MintQuoteState.UNPAID) {
+    if (check?.state === MintQuoteState.UNPAID) {
       addToast({ title: "Unpaid", type: TypeToast.warning })
     }
-    else if (check?.state == MintQuoteState.PAID) {
+    else if (check?.state === MintQuoteState.PAID) {
       addToast({ title: "Invoice is paid", type: TypeToast.success })
       const invoice = invoices?.find((i) => i?.quote == quote)
 
       const invoicesUpdated = invoices?.map((i) => {
-        if (i?.quote == quote) {
+        if (i?.quote === quote) {
           i.state = MintQuoteState.PAID
 
           return i;
@@ -125,11 +116,11 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 
       }
     }
-    else if (check?.state == MintQuoteState.ISSUED) {
+    else if (check?.state === MintQuoteState.ISSUED) {
       addToast({ title: "Invoice is paid", type: TypeToast.success })
       const invoice = invoices?.find((i) => i?.quote == quote)
       const invoicesUpdated = invoices?.map((i) => {
-        if (i?.quote == quote) {
+        if (i?.quote === quote) {
           i.state = MintQuoteState.PAID
           return i;
         }
@@ -159,7 +150,6 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       const response = await receiveP2PK(encoded);
       console.log("response", response)
       const proofsLocal = await getProofs()
-      console.log("response", response)
       if (!proofsLocal) {
         setInvoices(invoices)
         await storeProofs([...receive?.proofs as Proof[], ...response as Proof[]])

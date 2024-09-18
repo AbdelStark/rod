@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Connect } from "@nostr-connect/connect";
 import { NostrKeyManager } from "../../utils/nostr-key-manager";
 import { useAuth, useCashuStore } from "../../store";
@@ -12,11 +12,11 @@ import { useRouter } from "next/navigation";
 export default function NWCWallet() {
   const router = useRouter()
 
-  const { mnemonic, setMnemonic } = useCashuStore()
-  const { publicKey, setPublicKey, setAuth } = useAuth()
+  const {  setMnemonic } = useCashuStore()
+  const { setAuth } = useAuth()
   const { connectCashMint, connectCashWallet } = useCashu()
 
-  const [connect, setConnect] = useState<Connect | null>(null);
+  const [, setConnect] = useState<Connect | null>(null);
   async function initializeNostrConnect() {
     try {
 

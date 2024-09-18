@@ -10,36 +10,33 @@ export const KEY_CASHU_STORE = {
   TRANSACTIONS: "TRANSACTIONS",
 
 }
-export const storeTokens = async (tokens: Token[]) => {
-
-  return localStorage.setItem(KEY_CASHU_STORE.TOKENS, JSON.stringify(tokens));
+export const storeTokens = (tokens: Token[]) => {
+  localStorage.setItem(KEY_CASHU_STORE.TOKENS, JSON.stringify(tokens));
 };
 
-export const getTokens = async () => {
-
+export const getTokens = () => {
   return localStorage.getItem(KEY_CASHU_STORE.TOKENS);
 };
 
+export const storeQuotes = (quotes: MeltQuoteResponse[]) => {
 
-export const storeQuotes = async (quotes: MeltQuoteResponse[]) => {
-
-  return localStorage.setItem(KEY_CASHU_STORE.QUOTES, JSON.stringify(quotes));
+  localStorage.setItem(KEY_CASHU_STORE.QUOTES, JSON.stringify(quotes));
 };
 
 
-export const getQuotes = async (proofs: Proof[]) => {
+export const getQuotes = () => {
   return localStorage.getItem(KEY_CASHU_STORE.QUOTES);
 };
 
 
-export const storeProofs = async (proofs: Proof[]) => {
+export const storeProofs = (proofs: Proof[]) => {
 
 
-  return localStorage.setItem(KEY_CASHU_STORE.PROOFS, JSON.stringify(proofs));
+  localStorage.setItem(KEY_CASHU_STORE.PROOFS, JSON.stringify(proofs));
 };
 
 
-export const getProofs = async () => {
+export const getProofs = () => {
 
 
   return localStorage.getItem(KEY_CASHU_STORE.PROOFS);
@@ -53,9 +50,9 @@ export const getInvoices = () => {
 };
 
 
-export const storeInvoices = async (invoices: ICashuInvoice[]) => {
+export const storeInvoices = (invoices: ICashuInvoice[]) => {
 
-  return localStorage.setItem(KEY_CASHU_STORE.INVOICES, JSON.stringify(invoices));
+  localStorage.setItem(KEY_CASHU_STORE.INVOICES, JSON.stringify(invoices));
 };
 
 
@@ -65,49 +62,53 @@ export const getTransactions = () => {
 };
 
 
-export const storeTransactions = async (transactions: ICashuInvoice[]) => {
+export const storeTransactions = (transactions: ICashuInvoice[]) => {
 
   return localStorage.setItem(KEY_CASHU_STORE.TRANSACTIONS, JSON.stringify(transactions));
 };
 
-export const addProofs = async (proofsToAdd: Proof[]) => {
-  const proofsLocal = await getProofs()
+export const addProofs = (proofsToAdd: Proof[]) => {
+  const proofsLocal = getProofs()
   if (!proofsLocal) {
-    await storeProofs([...proofsToAdd as Proof[]])
+    storeProofs([...proofsToAdd as Proof[]])
   } else {
     const proofs: Proof[] = JSON.parse(proofsLocal)
-    await storeProofs([...proofs, ...proofsToAdd as Proof[]])
+    storeProofs([...proofs, ...proofsToAdd as Proof[]])
   }
 
 }
 
-export const storeProofsSpent = async (proofs: Proof[]) => {
+export const storeProofsSpent = (proofs: Proof[]) => {
 
   return localStorage.setItem(KEY_CASHU_STORE.PROOFS_SPENT, JSON.stringify(proofs));
 };
 
 
-export const getProofsSpent = async () => {
+export const getProofsSpent = () => {
 
   return localStorage.getItem(KEY_CASHU_STORE.PROOFS_SPENT);
 };
-export const addProofsSpent = async (proofsToAdd: Proof[]) => {
-  const proofsLocal = await getProofsSpent()
+export const addProofsSpent = (proofsToAdd: Proof[]) => {
+  const proofsLocal = getProofsSpent()
   if (!proofsLocal) {
-    await storeProofsSpent([...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofsToAdd as Proof[]])
+    return proofsToAdd;
   } else {
     const proofs: Proof[] = JSON.parse(proofsLocal)
-    await storeProofsSpent([...proofs, ...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofs, ...proofsToAdd as Proof[]])
+    return proofs;
   }
 
 }
 
-export const updateProofsSpent = async (proofsToAdd: Proof[]) => {
-  const proofsLocal = await getProofsSpent()
+export const updateProofsSpent = (proofsToAdd: Proof[]) => {
+  const proofsLocal = getProofsSpent()
   if (!proofsLocal) {
-    await storeProofsSpent([...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofsToAdd as Proof[]])
   } else {
-    await storeProofsSpent([...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofsToAdd as Proof[]])
+
   }
+  return proofsToAdd;
 
 }

@@ -4,22 +4,24 @@ export const KEY_NOSTR = {
   CONTACTS:"CONTACTS",
 
 }
-export const storePubkeyContacts = async (contacts:string[]) => {
+export const storePubkeyContacts = (contacts:string[]) => {
 
-  return localStorage.setItem(KEY_NOSTR.CONTACTS_PUBKEY, JSON.stringify(contacts));
+  localStorage.setItem(KEY_NOSTR.CONTACTS_PUBKEY, JSON.stringify(contacts));
 };
 
-export const getPubkeyContacts = async () => {
+export const getPubkeyContacts= () => {
 
   return localStorage.getItem(KEY_NOSTR.CONTACTS_PUBKEY);
 };
 
-export const updatePubkeyContacts = async (contacts: string[]) => {
-  const proofsLocal = await getPubkeyContacts()
+export const updatePubkeyContacts =  (contacts: string[]) => {
+  const proofsLocal =  getPubkeyContacts()
   if (!proofsLocal) {
-    await storePubkeyContacts([...contacts])
+     storePubkeyContacts([...contacts])
   } else {
-    await storePubkeyContacts([...contacts])
+     storePubkeyContacts([...contacts])
   }
+
+  return contacts;
 
 }

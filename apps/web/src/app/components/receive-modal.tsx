@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
 import { Dialog, TabGroup, Tab, TabPanels, TabPanel, TabList, DialogTitle, DialogPanel } from "@headlessui/react";
-import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
 import { getDecodedToken, MintQuoteResponse, MintQuoteState } from "@cashu/cashu-ts";
 import { getInvoices, storeInvoices, addProofs } from "../../utils/storage/cashu";
@@ -8,12 +7,6 @@ import { ICashuInvoice } from "../../types/wallet";
 import { MINTS_URLS } from "../../utils/relay";
 import { TypeToast, useToast } from "../../hooks/useToast";
 
-interface Notification {
-  id: number;
-  message: string;
-  date: Date;
-  read: boolean;
-}
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -24,13 +17,12 @@ interface NotificationModalProps {
 const ReceiveModal: React.FC<NotificationModalProps> = ({
   isOpen,
   onClose,
-  onGenerateInvoice,
 }) => {
   const { addToast } = useToast();
 
   const [amount, setAmount] = useState<number | undefined>()
   const [ecash, setEcash] = useState<string | undefined>()
-  const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
+  const [mintUrl, _] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const { requestMintQuote, wallet } = useCashu();

@@ -12,17 +12,15 @@ import NotificationModal from "./components/notification-modal";
 import SearchModal from "./components/search-modal";
 import TransactionModal from "./components/transaction-modal";
 import ReceiveModal from "./components/receive-modal";
-import { KEYS_STORAGE } from "./constants";
 import { useAuth, useCashuStore } from "../store";
 import Settings from "./components/settings";
 import { useCashu } from "../hooks/useCashu";
-import { MINTS_URLS } from "../utils/relay";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import InvoicesHistory from "./components/invoices-history";
 import { useRouter } from "next/navigation";
 import { TypeToast, useToast } from "../hooks/useToast";
 import { Proof } from "@cashu/cashu-ts";
-import { addProofsSpent, getProofs, storeProofs, updateProofsSpent } from "../utils/storage/cashu";
+import { addProofsSpent, getProofs } from "../utils/storage/cashu";
 import SendModal from "./components/send-modal";
 
 interface Transaction {
@@ -52,9 +50,8 @@ export default function Home() {
   const [balance, setBalance] = useState<number>(0);
   const router = useRouter()
 
-  const { mnemonic, setMnemonic } = useCashuStore()
-  const { publicKey, setPublicKey, setAuth } = useAuth()
-  const { connectCashMint, connectCashWallet } = useCashu()
+  const { setMnemonic } = useCashuStore()
+  const { setAuth } = useAuth()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
@@ -93,13 +90,12 @@ export default function Home() {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [connect, setConnect] = useState<Connect | null>(null);
 
   const { wallet } = useCashu()
   const { addToast } = useToast()
 
   const getProofsWalletAndBalance = async () => {
-    const proofsLocal = await getProofs()
+    const proofsLocal = getProofs()
     if (proofsLocal) {
       /** TODO clean proofs */
       let proofs: Proof[] = JSON.parse(proofsLocal)
@@ -111,12 +107,9 @@ export default function Home() {
         }
       })
 
-      if(proofsSpent) {
+      if (proofsSpent) {
         await addProofsSpent(proofsSpent)
       }
-      // console.log("proofs", proofs)
-      // await storeProofs(proofs)
-      const proofsToUsed: Proof[] = []
       const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
       console.log("totalAmount", totalAmount)
       setBalance(totalAmount)
@@ -144,15 +137,11 @@ export default function Home() {
 
     } else if (!isWalletSetup) {
       return router.push("/onboarding")
-
     }
   }
   useEffect(() => {
     checkWalletSetup()
-    // initializeNostrConnect();
   }, [isConnected]);
-
-
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -178,20 +167,6 @@ export default function Home() {
 
   const handleSend = () => {
     setIsSendModalOpen(true);
-  };
-
-  const handleSendConfirm = (amount: number, recipient: string) => {
-    handleTransaction(-amount);
-    setNotifications((prevNotifications) => [
-      {
-        id: prevNotifications.length + 1,
-        message: `You sent ${amount} sats to ${recipient}`,
-        date: new Date(),
-        read: false,
-      },
-      ...prevNotifications,
-    ]);
-    setIsSendModalOpen(true)
   };
 
   const handleReceive = () => {
@@ -322,7 +297,7 @@ export default function Home() {
           }}
         />
       ) : null}
-   
+
     </div>
   );
 }

@@ -3,7 +3,7 @@ import {createStore} from 'zustand';
 import createBoundedUseStore from './createBoundedUseStore';
 import { Proof } from '@cashu/cashu-ts';
 
-type State = {
+interface State {
   publicKey: string;
   privateKey: string;
   isExtension?: boolean;
@@ -20,7 +20,7 @@ type State = {
   pendingTokens?:string[];
 };
 
-type Action = {
+interface Action {
   setAuth: (publicKey: string, privateKey: string) => void;
   setPublicKey: (publicKey: string) => void;
   setIsExtensionConnect: (isExtension: boolean) => void;
@@ -36,7 +36,7 @@ type Action = {
   setNWCUrl: (nwcUrl:string) => void;
 };
 
-export const authStore = createStore<State & Action>((set, get) => ({
+export const authStore = createStore<State & Action>((set) => ({
   // publicKey and privateKey are set to undefined but we know they are strings
   // so we can cast them as strings without hassle in the app
   publicKey: undefined as unknown as string,

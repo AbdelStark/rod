@@ -4,14 +4,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { getTransactions } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MintQuoteState } from "@cashu/cashu-ts";
-
-interface Transaction {
-  id: number;
-  amount: number;
-  date: Date;
-  description: string;
-  status: "completed" | "pending" | "failed";
-}
+import { Transaction } from "../../types";
 
 interface TransactionHistoryProps {
   transactions?: ICashuInvoice[];
@@ -21,11 +14,9 @@ interface TransactionHistoryProps {
 const TRANSACTIONS_PER_PAGE = 5;
 
 const TransactionHistory: React.FC<TransactionHistoryProps> = ({
-  transactions,
-  onTransactionClick,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [animate, setAnimate] = useState(false);
+  const [_, setAnimate] = useState(false);
   const [txInvoices, setTxInvoices] = useState<ICashuInvoice[] | undefined>([])
 
   const totalInvoices = useMemo(() => {
@@ -72,7 +63,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
-        const invoicesPaid = invoices.filter((i) => i?.state == MintQuoteState?.ISSUED || i?.state == MintQuoteState.PAID)
+        const invoicesPaid = invoices.filter((i) => i?.state === MintQuoteState?.ISSUED || i?.state === MintQuoteState.PAID)
         setTxInvoices(invoicesPaid?.reverse())
 
       }

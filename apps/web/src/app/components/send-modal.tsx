@@ -1,11 +1,10 @@
 import React, { ChangeEvent, useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useCashu } from "../../hooks/useCashu";
-import { getDecodedToken, getEncodedToken, getEncodedTokenV4, MintQuoteResponse, Proof, Token } from "@cashu/cashu-ts";
+import { getEncodedToken, MintQuoteResponse, Proof, Token } from "@cashu/cashu-ts";
 import { getProofs, } from "../../utils/storage/cashu";
 import { MINTS_URLS } from "../../utils/relay";
 import { TypeToast, useToast } from "../../hooks/useToast";
-import { ICashuInvoice } from "../../types/wallet";
 import SendNostr from "./send-nostr";
 
 
@@ -23,16 +22,14 @@ const SendModal: React.FC<SendModalProps> = ({
 
   const { addToast } = useToast()
   const [amount, setAmount] = useState<number | undefined>()
-  const [ecash, setEcash] = useState<string | undefined>()
+  const [, setEcash] = useState<string | undefined>()
   const [cashuTokenCreated, setCashuTokenCreated] = useState<string | undefined>()
   const [invoice, setInvoice] = useState<string | undefined>()
-  const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
-  const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const { requestMintQuote, meltTokens, payLnInvoice, sendP2PK, wallet } = useCashu()
+  const [, setIsCopied] = useState<boolean>(false);
+  const {  meltTokens, wallet } = useCashu()
   const handlePayInvoice = async () => {
     if (!invoice) return;
-    const proofsLocal = await getProofs()
+    const proofsLocal = getProofs()
 
     /** TODO add tx history for paid invoice/ecash */
     if (proofsLocal) {
@@ -70,7 +67,7 @@ const SendModal: React.FC<SendModalProps> = ({
         return;
       }
 
-      const proofsLocal = await getProofs()
+      const proofsLocal = getProofs()
       if (proofsLocal) {
         let proofs: Proof[] = JSON.parse(proofsLocal)
 
@@ -86,8 +83,6 @@ const SendModal: React.FC<SendModalProps> = ({
         const proofsToUsed: Proof[] = []
         const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
         console.log("totalAmount", totalAmount)
-
-
 
         let amountCounter = 0;
         for (let p of proofs?.reverse()) {
@@ -134,12 +129,6 @@ const SendModal: React.FC<SendModalProps> = ({
 
 
   }
-
-  const handleChangeEcash = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setEcash(value);
-
-  };
 
   const handleChangeInvoice = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
