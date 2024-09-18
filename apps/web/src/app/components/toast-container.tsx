@@ -10,7 +10,7 @@ const ToastContainer = () => {
             {toasts.map((toast) => (
                 <div
                     key={toast.id}
-                    className={`${toast?.type == TypeToast.success ? "bg-green-500"
+                    className={`${toast?.type === TypeToast.success ? "bg-green-500"
                         : TypeToast.error ? "bg-red-500" :
                             TypeToast.warning && "bg-blue-500"
                         } text-white p-3 rounded shadow-md`}

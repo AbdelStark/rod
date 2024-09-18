@@ -32,7 +32,6 @@ export default function NWCWallet() {
       console.log("Nostr keypair ready:", { publicKey });
       setAuth(publicKey, secretKey,)
       setMnemonic(mnemonic)
-
       const newConnect = new Connect({
         secretKey,
         relay: "wss://nostr.vulpem.com",
@@ -43,10 +42,7 @@ export default function NWCWallet() {
       await newConnect.init();
 
       const { mint, keys } = await connectCashMint(MINTS_URLS.MINIBITS)
-      console.log("cashuMint", mint)
-      const wallet = await connectCashWallet(mint, keys[0])
-      console.log("wallet", wallet)
-
+      connectCashWallet(mint, keys[0])
       setConnect(newConnect);
 
       router.push("/")

@@ -5,6 +5,8 @@ import {
   EyeSlashIcon,
   ClipboardIcon,
 } from "@heroicons/react/24/outline";
+import { useCashuStore } from "../../store";
+import { TypeToast, useToast } from "../../hooks/useToast";
 
 interface SettingsProps {
   isOpen: boolean;
@@ -12,7 +14,11 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
-  const [seedPhrase, setSeedPhrase] = useState(
+
+
+  const {mnemonic} = useCashuStore()
+  const [seedPhrase, ] = useState(
+    mnemonic ??
     "******** ******** ****** ***** **** ******* ****** ***** **** ***** **** *****",
   );
   const [showSeedPhrase, setShowSeedPhrase] = useState(false);
@@ -20,12 +26,15 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [nwcEnabled, setNwcEnabled] = useState(false);
   const [nwcAllowance, setNwcAllowance] = useState("10000000");
 
+  const {addToast} = useToast()
+
   const toggleSeedPhraseVisibility = () => {
     setShowSeedPhrase(!showSeedPhrase);
   };
 
   const copySeedPhrase = () => {
     navigator.clipboard.writeText(seedPhrase);
+    addToast({title:"Seed copied", type:TypeToast.success})
     // You might want to show a toast or notification here
   };
 

@@ -64,7 +64,7 @@ export const getTransactions = () => {
 
 export const storeTransactions = (transactions: ICashuInvoice[]) => {
 
-  return localStorage.setItem(KEY_CASHU_STORE.TRANSACTIONS, JSON.stringify(transactions));
+  localStorage.setItem(KEY_CASHU_STORE.TRANSACTIONS, JSON.stringify(transactions));
 };
 
 export const addProofs = (proofsToAdd: Proof[]) => {
@@ -80,7 +80,7 @@ export const addProofs = (proofsToAdd: Proof[]) => {
 
 export const storeProofsSpent = (proofs: Proof[]) => {
 
-  return localStorage.setItem(KEY_CASHU_STORE.PROOFS_SPENT, JSON.stringify(proofs));
+  localStorage.setItem(KEY_CASHU_STORE.PROOFS_SPENT, JSON.stringify(proofs));
 };
 
 

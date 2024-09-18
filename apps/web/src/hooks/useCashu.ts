@@ -281,8 +281,8 @@ export const useCashu = () => {
     }[]) => {
         try {
             if (!wallet) return undefined;
-            const checkProofSpent = await wallet.checkProofsSpent(proofs)
-            return checkProofSpent;
+            const proofsSpents = await wallet.checkProofsSpent(proofs)
+            return proofsSpents;
         } catch (e) {
             console.log("Error checkProofSpent", e)
         }

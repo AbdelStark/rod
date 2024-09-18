@@ -151,20 +151,6 @@ export default function Home() {
     setSelectedTransaction(null);
   };
 
-  const handleTransaction = (amount: number) => {
-    setBalance((prevBalance) => prevBalance + amount);
-    // setTransactions((prevTransactions) => [
-    //   {
-    //     id: prevTransactions.length + 1,
-    //     amount,
-    //     date: new Date(),
-    //     description: amount > 0 ? "Received" : "Sent",
-    //     status: "completed",
-    //   },
-    //   ...prevTransactions,
-    // ]);
-  };
-
   const handleSend = () => {
     setIsSendModalOpen(true);
   };

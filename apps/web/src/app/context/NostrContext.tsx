@@ -21,7 +21,7 @@ export const NostrProvider: React.FC<React.PropsWithChildren> = ({children}) => 
 
   const [ndk, setNdk] = useState<NDK>(
     new NDK({
-      explicitRelayUrls: relays ?? ROD_RELAYS,
+      explicitRelayUrls: relays,
     }),
   );
 
@@ -34,7 +34,7 @@ export const NostrProvider: React.FC<React.PropsWithChildren> = ({children}) => 
 
   useEffect(() => {
     const newNdk = new NDK({
-      explicitRelayUrls: relays ?? ROD_RELAYS,
+      explicitRelayUrls: relays,
       signer: privateKey
         ? new NDKPrivateKeySigner(privateKey)
         : isExtension
