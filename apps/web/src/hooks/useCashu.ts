@@ -6,6 +6,8 @@ import {
     MintKeys,
     MintKeyset,
     GetInfoResponse,
+    MeltTokensResponse,
+    MeltQuoteResponse,
 } from '@cashu/cashu-ts';
 import { useMemo, useState } from 'react';
 
@@ -22,12 +24,8 @@ export const useCashu = () => {
     const { privateKey } = useAuth()
     const { setSeed, seed, mnemonic, setMnemonic, setMints, setMintsRequests, } = useCashuStore()
 
-
-
     const [mintUrl, setMintUrl] = useState<string | undefined>("https://mint.minibits.cash/Bitcoin")
     const [mint, setMint] = useState<CashuMint>(new CashuMint(mintUrl ?? "https://mint.minibits.cash/Bitcoin"))
-    // const [mnemonic,setMnemonic] = useState<string|undefined>()
-    // const [seed,setSeed] = useState<Uint8Array|undefined>()
     const [keys, setKeys] = useState<Keys[]>()
     const [mintKeys, setMintKeys] = useState<MintKeys[]>()
     const [mintKeysset, setMintKeyset] = useState<MintKeys | undefined>()
@@ -37,7 +35,7 @@ export const useCashu = () => {
         return mint;
     }, [mint])
     const [walletCashu, setWallet] = useState<CashuWallet | undefined>(new CashuWallet(mint, {
-        mnemonicOrSeed: mnemonic ?? mnemonic,
+        mnemonicOrSeed: mnemonic ?? seed,
         keys: mintKeysset,
         // unit:"sat"
     }))
@@ -155,7 +153,7 @@ export const useCashu = () => {
     const mintTokens = async (amount: number, quote: MintQuoteResponse) => {
 
         const proofs = await wallet?.mintTokens(amount, quote.quote)
-        console.log("proofs mint tokens",proofs)
+        console.log("proofs mint tokens", proofs)
         if (!proofs) return proofs;
         setProofs(proofs?.proofs)
         return proofs;
@@ -169,7 +167,7 @@ export const useCashu = () => {
     }
 
 
-    const meltTokens = async (invoice: string) => {
+    const meltTokens = async (invoice: string, proofsProps?: Proof[]) => {
         try {
             if (!wallet) return undefined;
             const meltQuote = await wallet.createMeltQuote(invoice);
@@ -182,7 +180,7 @@ export const useCashu = () => {
             // console.log("checkProofs", checkProofs)
             // in a real wallet, we would coin select the correct amount of proofs from the wallet's storage
             // instead of that, here we swap `proofs` with the mint to get the correct amount of proofs
-            const { returnChange: proofsToKeep, send: proofsToSend } = await wallet.send(amountToSend, proofs);
+            const { returnChange: proofsToKeep, send: proofsToSend } = await wallet.send(amountToSend, proofsProps ?? proofs);
             // store proofsToKeep in wallet ..
             console.log("proofsToSend", proofsToSend)
 
@@ -194,7 +192,7 @@ export const useCashu = () => {
         }
 
     }
-    
+
 
     const payLnInvoice = async (amount: number, request: MintQuoteResponse, proofs: Proof[]) => {
 
@@ -217,13 +215,25 @@ export const useCashu = () => {
         }
     }
 
+    const payLnInvoiceWithToken = async (amount: number, token: string, request: MintQuoteResponse,meltQuote:MeltQuoteResponse, proofs: Proof[]) => {
+
+        if (!wallet) return undefined;
+        const response = await wallet.payLnInvoiceWithToken(request.request,
+            token,
+            meltQuote,
+            );
+
+        return {
+            response,
+        }
+    }
 
 
 
-    const sendP2PK = async (tokensProofs: Proof[], pubkeyRecipient: Uint8Array, mintUrl: string) => {
+    const sendP2PK = async (amount: number, tokensProofs: Proof[], pubkeyRecipient: Uint8Array, mintUrl: string) => {
         if (!wallet) return undefined;
 
-        const { send } = await wallet.send(64, tokensProofs, { pubkey: bytesToHex(pubkeyRecipient) });
+        const { send } = await wallet.send(amount, tokensProofs, { pubkey: bytesToHex(pubkeyRecipient) });
         const encoded = getEncodedToken({
             token: [{ mint: mintUrl, proofs: send }]
         })
@@ -241,9 +251,16 @@ export const useCashu = () => {
 
         const privateKeyHex = new Uint8Array(Buffer.from(privateKey, 'utf-8'));
 
-        const proofs = await wallet.receive(encoded, { privkey: bytesToHex(privateKeyHex) });
+        if (privateKey && privateKey) {
+            const proofs = await wallet.receive(encoded, { privkey: bytesToHex(privateKeyHex) });
 
-        return proofs;
+            return proofs;
+        } else {
+            const proofs = await wallet.receive(encoded);
+            return proofs;
+        }
+
+
     }
 
     const payExternalInvoice = async (amount: number, fee: number, externalInvoice: string, request: MintQuoteResponse, proofs: Proof[]) => {
@@ -304,6 +321,7 @@ export const useCashu = () => {
     }
 
 
+
     const checkMintQuote = async (quote: string) => {
         try {
             if (!wallet) return undefined;
@@ -328,6 +346,7 @@ export const useCashu = () => {
         requestMintQuote,
         mintTokens,
         payLnInvoice,
+        payLnInvoiceWithToken,
         sendP2PK,
         receiveP2PK,
         meltTokens,

@@ -20,6 +20,13 @@ export class NostrKeyManager {
     return this.createAndStoreKeyPair();
   }
 
+  static getPublicKey() {
+    const storedPubKey = localStorage.getItem(NostrKeyManager.STORAGE_KEY);
+
+    return storedPubKey;
+  }
+
+
   private static async createAndStoreKeyPair(): Promise<{
     secretKey: string;
     publicKey: string;

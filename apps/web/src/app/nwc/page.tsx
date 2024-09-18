@@ -2,24 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { Connect } from "@nostr-connect/connect";
-import { NostrKeyManager } from "../utils/nostr-key-manager";
-import Header from "./components/header";
-import Balance from "./components/balance";
-import Actions from "./components/actions";
-import QuickSend from "./components/quick-send";
-import TransactionHistory from "./components/transaction-history";
-import NotificationModal from "./components/notification-modal";
-import SearchModal from "./components/search-modal";
-import TransactionModal from "./components/transaction-modal";
-import ReceiveModal from "./components/receive-modal";
-import { KEYS_STORAGE } from "./constants";
-import { useAuth, useCashuStore } from "../store";
-import Settings from "./components/settings";
-import { useCashu } from "../hooks/useCashu";
-import { MINTS_URLS } from "../utils/relay";
+import { NostrKeyManager } from "../../utils/nostr-key-manager";
+import Header from "../components/header";
+import Balance from "../components/balance";
+import Actions from "../components/actions";
+import QuickSend from "../components/quick-send";
+import TransactionHistory from "../components/transaction-history";
+import NotificationModal from "../components/notification-modal";
+import SearchModal from "../components/search-modal";
+import TransactionModal from "../components/transaction-modal";
+import ReceiveModal from "../components/receive-modal";
+import { KEYS_STORAGE } from "../constants";
+import { useAuth, useCashuStore } from "../../store";
+import Settings from "../components/settings";
+import { useCashu } from "../../hooks/useCashu";
+import { MINTS_URLS } from "../../utils/relay";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import InvoicesHistory from "./components/invoices-history";
-import SendModal from "./components/send-modal";
+import InvoicesHistory from "../components/invoices-history";
+import SendModal from "../components/send-modal";
+import NwcMint from "../components/nwc-mint";
 
 interface Transaction {
   id: number;
@@ -43,7 +44,7 @@ interface Notification {
   read: boolean;
 }
 
-export default function Home() {
+export default function NWCWallet() {
   // const [balance, setBalance] = useState<number>(10860);
   const [balance, setBalance] = useState<number>(0);
   // const [transactions, setTransactions] = useState<Transaction[]>([
@@ -248,6 +249,7 @@ export default function Home() {
 
   return (
     <div className="max-w-md mx-auto p-6 min-h-screen">
+
       <Header
         avatarUrl="/avatar/goku.jpeg"
         onNotificationClick={handleNotificationClick}
@@ -256,6 +258,8 @@ export default function Home() {
         unreadNotificationsCount={unreadNotificationsCount}
         userHandle="@goku"
       />
+      <NwcMint></NwcMint>
+
       <NotificationModal
         isOpen={isNotificationModalOpen}
         notifications={notifications}

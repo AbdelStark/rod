@@ -2,8 +2,8 @@ import React, { ChangeEvent, useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
-import { MintQuoteResponse } from "@cashu/cashu-ts";
-import { getInvoices, storeInvoices } from "../../utils/storage/cashu";
+import { MintQuoteResponse, Proof } from "@cashu/cashu-ts";
+import { getInvoices, getProofs, storeInvoices } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MINTS_URLS } from "../../utils/relay";
 
@@ -26,11 +26,28 @@ const SendModal: React.FC<SendModalProps> = ({
   const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const { requestMintQuote, meltTokens } = useCashu()
+  const { requestMintQuote, meltTokens, payLnInvoice } = useCashu()
   const handlePayInvoice = async () => {
     if (!invoice) return;
-    const tokens = await meltTokens(invoice)
-    console.log("tokens",tokens)
+    const proofsLocal = await getProofs()
+
+    if(proofsLocal) {
+      let proofs: Proof[] = JSON.parse(proofsLocal)
+      console.log("proofs",proofs)
+
+      // Filter proofs to spent
+      const lenProof = proofs?.length
+      // proofs.slice(lenProof-3, lenProof)
+      // const proofsKey  = proofs?.filter((p ) => p?.amount == )
+      const tokens = await meltTokens(invoice, proofs?.slice(lenProof-1, lenProof))
+      console.log("tokens",tokens)
+  
+    } else {
+
+      const tokens = await meltTokens(invoice)
+      console.log("tokens",tokens)
+  
+    }
 
 
   }
