@@ -97,7 +97,7 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
     console.log("response", response)
 
     if (response) {
-      addToast("ecash payment received", TypeToast.success)
+      addToast({title:"ecash payment received", type:TypeToast.success})
       await addProofs(response)
     }
   }

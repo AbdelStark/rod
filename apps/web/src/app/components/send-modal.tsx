@@ -55,66 +55,65 @@ const SendModal: React.FC<SendModalProps> = ({
   }
 
   const handleGenerateEcash = async () => {
-    if (!amount) {
-      addToast("Please add a mint amount", TypeToast.warning)
 
-      return;
-    }
+    try {
+      if (!amount) {
+        addToast({ title: "Please add a mint amount", type: TypeToast.warning })
+        return;
+      }
 
-    if (!wallet) {
-      addToast("Please connect your wallet", TypeToast.error)
+      if (!wallet) {
+        addToast({ title: "Please connect your wallet", type: TypeToast.error })
+        return;
+      }
 
-      return;
-    }
+      const proofsLocal = await getProofs()
+      if (proofsLocal) {
+        let proofs: Proof[] = JSON.parse(proofsLocal)
+        console.log("proofs", proofs)
+        const proofsToUsed: Proof[] = []
+        const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
+        console.log("totalAmount", totalAmount)
 
-    const proofsLocal = await getProofs()
+        let amountCounter = 0;
+        for (let p of proofs) {
 
+          amountCounter += p?.amount;
+          proofsToUsed.push(p)
 
-
-
-    if (proofsLocal) {
-
-      let proofs: Proof[] = JSON.parse(proofsLocal)
-      console.log("proofs", proofs)
-
-      const proofsToUsed: Proof[] = []
-      const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
-
-
-      let amountCounter = 0;
-      for (let p of proofs) {
-
-        amountCounter += p?.amount;
-        proofsToUsed.push(p)
-
-        if (amountCounter >= amount) {
-          break;
+          if (amountCounter >= amount) {
+            break;
+          }
         }
+
+        const sendCashu = await wallet?.send(amount, proofsToUsed)
+        console.log("sendCashu", sendCashu)
+
+        if (sendCashu) {
+          const keysets = await wallet?.mint?.getKeySets()
+          // unit of keysets
+          let unit = keysets?.keysets[0].unit;
+
+          const token = {
+            token: [{ proofs: proofsToUsed, mint: wallet?.mint?.mintUrl }],
+            unit: unit,
+          } as Token;
+          console.log("keysets", keysets)
+          console.log("proofsToUsed", proofsToUsed)
+          console.log("token", token)
+
+          const cashuToken = getEncodedTokenV4(token)
+          console.log("cashuToken", cashuToken)
+
+          addToast({ title: "Cashu created", type: TypeToast?.success })
+
+        }
+
       }
 
-      const sendCashu = await wallet?.send(amount, proofsToUsed)
-      console.log("sendCashu", sendCashu)
-
-      if (sendCashu) {
-        const keysets = await wallet?.mint?.getKeySets()
-        // unit of keysets
-        let unit = keysets?.keysets[0].unit;
-
-        const token = {
-          token: [{ proofs: proofsToUsed, mint: wallet?.mint?.mintUrl }],
-          // unit: unit,
-        } as Token;
-        console.log("keysets", keysets)
-        console.log("proofsToUsed", proofsToUsed)
-        console.log("token", token)
-
-        const cashuToken = getEncodedTokenV4(token)
-        console.log("cashuToken", cashuToken)
-
-        addToast("Cashu created", TypeToast?.success)
-
-
-      }
+    } catch (e) {
+      console.log("Error generate cashu token", e)
+      addToast({ title: "Error when generate cashu token", type: TypeToast?.error })
 
     }
 
@@ -150,7 +149,7 @@ const SendModal: React.FC<SendModalProps> = ({
       console.log("response", response)
 
       if (response) {
-        addToast("ecash payment received", TypeToast.success)
+        addToast({title:"ecash payment received", type:TypeToast.success})
         await addProofs(response?.returnChange)
       }
 

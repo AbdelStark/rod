@@ -99,10 +99,10 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
     const check = await checkMintQuote(quote)
     console.log("check", check)
     if (check?.state == MintQuoteState.UNPAID) {
-      addToast("Unpaid", TypeToast.warning)
+      addToast({ title: "Unpaid", type: TypeToast.warning })
     }
     else if (check?.state == MintQuoteState.PAID) {
-      addToast("Invoice is paid", TypeToast.success)
+      addToast({ title: "Invoice is paid", type: TypeToast.success })
       const invoice = invoices?.find((i) => i?.quote == quote)
 
 
@@ -129,10 +129,8 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       }
     }
     else if (check?.state == MintQuoteState.ISSUED) {
-      addToast("Invoice is paid", TypeToast.success)
+      addToast({ title: "Invoice is paid", type: TypeToast.success })
       const invoice = invoices?.find((i) => i?.quote == quote)
-
-
       const invoicesUpdated = invoices?.map((i) => {
         if (i?.quote == quote) {
           i.state = MintQuoteState.PAID
@@ -141,17 +139,10 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
         }
         return i;
       }) ?? []
-
       storeInvoices(invoicesUpdated)
       storeTransactions(invoicesUpdated)
-
       if (invoice && invoice?.quote) {
-
         const received = await handleReceivePaymentPaid(invoice)
-
-
-
-
       }
     }
 

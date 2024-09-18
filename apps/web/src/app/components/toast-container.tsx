@@ -15,7 +15,7 @@ const ToastContainer = () => {
                             TypeToast.warning && "bg-blue-500"
                         } text-white p-3 rounded shadow-md`}
                 >
-                    {toast.message}
+                    {toast.title}
                 </div>
             ))}
         </div>

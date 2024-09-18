@@ -3,7 +3,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 // Define the Toast type
 interface Toast {
   id: number;
-  message: string;
+  title: string;
   type?: TypeToast | string
 }
 export enum TypeToast {
@@ -13,20 +13,23 @@ export enum TypeToast {
 }
 // Define the context type
 interface ToastContextType {
-  addToast: (message: string, type: string | TypeToast) => void;
+  addToast: (props:AddToast) => void;
   removeToast: (id: number) => void;
   toasts: Toast[];
 }
 
+interface AddToast {
+  title: string, type: string | TypeToast, description?:string
+}
 // Create the Toast context
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = (message: string, type: string | TypeToast = "success") => {
+  const addToast = ({title, description, type}:AddToast) => {
     const id = Date.now();
-    setToasts((prevToasts) => [...prevToasts, { id, message, type }]);
+    setToasts((prevToasts) => [...prevToasts, { id, title, type }]);
     // Remove the toast automatically after 3 seconds
     setTimeout(() => removeToast(id), 3000);
   };
