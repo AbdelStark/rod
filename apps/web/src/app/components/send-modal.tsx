@@ -179,7 +179,7 @@ const SendModal: React.FC<SendModalProps> = ({
             className="flex gap-3 justify-items-evenly justify-between"
           >
             <DialogTitle className="text-lg font-medium mb-4">
-              Invoice
+              Send
             </DialogTitle>
             <button
               className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"

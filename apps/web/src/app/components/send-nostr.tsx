@@ -9,9 +9,11 @@ interface Contact {
 }
 
 interface SendModalProps {
+  onClose?:() => void;
 }
 
 const SendNostr: React.FC<SendModalProps> = ({
+  onClose
 }) => {
 
 
@@ -43,7 +45,7 @@ const SendNostr: React.FC<SendModalProps> = ({
       const { secretKey } = await NostrKeyManager.getOrCreateKeyPair();
       console.log("Retrieved Nostr secret key:", secretKey);
       // onSend(parseFloat(amount), recipient);
-      // onClose();
+      onClose && onClose();
       setStep("amount");
       setAmount("");
       setRecipient("");
