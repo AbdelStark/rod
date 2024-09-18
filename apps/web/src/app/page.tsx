@@ -19,7 +19,6 @@ import { useCashu } from "../hooks/useCashu";
 import { MINTS_URLS } from "../utils/relay";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import InvoicesHistory from "./components/invoices-history";
-import SendModal from "./components/send-modal";
 import { useRouter } from "next/navigation";
 import { TypeToast, useToast } from "../hooks/useToast";
 import { Proof } from "@cashu/cashu-ts";
@@ -323,14 +322,7 @@ export default function Home() {
           }}
         />
       ) : null}
-      <SendModal
-        contacts={contacts}
-        isOpen={isSendModalOpen}
-        onClose={() => {
-          setIsSendModalOpen(false);
-        }}
-        onSend={handleSendConfirm}
-      />
+   
     </div>
   );
 }

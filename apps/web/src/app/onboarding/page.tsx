@@ -19,7 +19,7 @@ import { useCashu } from "../../hooks/useCashu";
 import { MINTS_URLS } from "../../utils/relay";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import InvoicesHistory from "../components/invoices-history";
-import SendModal from "../components/send-modal";
+import SendModal from "../components/send-modal-nostr";
 import NwcMint from "../components/nwc-mint";
 import { useRouter } from "next/navigation";
 
