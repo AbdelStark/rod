@@ -2,7 +2,7 @@ import React, { ChangeEvent, useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
-import { getDecodedToken, getEncodedTokenV4, MintQuoteResponse, Proof, Token } from "@cashu/cashu-ts";
+import { getDecodedToken, getEncodedToken, getEncodedTokenV4, MintQuoteResponse, Proof, Token } from "@cashu/cashu-ts";
 import { getInvoices, getProofs, storeInvoices, addProofs } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MINTS_URLS } from "../../utils/relay";
@@ -24,6 +24,7 @@ const SendModal: React.FC<SendModalProps> = ({
   const { addToast } = useToast()
   const [amount, setAmount] = useState<number | undefined>()
   const [ecash, setEcash] = useState<string | undefined>()
+  const [cashuTokenCreated, setCashuTokenCreated] = useState<string | undefined>()
   const [invoice, setInvoice] = useState<string | undefined>()
   const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
@@ -70,13 +71,24 @@ const SendModal: React.FC<SendModalProps> = ({
       const proofsLocal = await getProofs()
       if (proofsLocal) {
         let proofs: Proof[] = JSON.parse(proofsLocal)
+
+        const proofsSpent = await wallet?.checkProofsSpent(proofs)
+        console.log("proofsSpent", proofsSpent)
+
+        proofs = proofs?.filter((p) => {
+          if (!proofsSpent?.includes(p)) {
+            return p;
+          }
+        })
         console.log("proofs", proofs)
         const proofsToUsed: Proof[] = []
         const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
         console.log("totalAmount", totalAmount)
 
+
+
         let amountCounter = 0;
-        for (let p of proofs) {
+        for (let p of proofs?.reverse()) {
 
           amountCounter += p?.amount;
           proofsToUsed.push(p)
@@ -102,8 +114,9 @@ const SendModal: React.FC<SendModalProps> = ({
           console.log("proofsToUsed", proofsToUsed)
           console.log("token", token)
 
-          const cashuToken = getEncodedTokenV4(token)
+          const cashuToken = getEncodedToken(token)
           console.log("cashuToken", cashuToken)
+          setCashuTokenCreated(cashuToken)
 
           addToast({ title: "Cashu created", type: TypeToast?.success })
 
@@ -149,7 +162,7 @@ const SendModal: React.FC<SendModalProps> = ({
       console.log("response", response)
 
       if (response) {
-        addToast({title:"ecash payment received", type:TypeToast.success})
+        addToast({ title: "ecash payment received", type: TypeToast.success })
         await addProofs(response?.returnChange)
       }
 
@@ -188,6 +201,21 @@ const SendModal: React.FC<SendModalProps> = ({
       await navigator.clipboard.writeText(quote?.request);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000); // Reset copy state after 2 seconds
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  };
+
+
+
+
+  const handleCopyCashuToken = async () => {
+    try {
+      if (!cashuTokenCreated) return;
+      await navigator.clipboard.writeText(cashuTokenCreated);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Reset copy state after 2 seconds
+      addToast({title:"Copy successfully", type:TypeToast.success})
     } catch (error) {
       console.error('Failed to copy text:', error);
     }
@@ -257,6 +285,17 @@ const SendModal: React.FC<SendModalProps> = ({
                   value={ecash}
                 >
                 </input> */}
+
+                {cashuTokenCreated &&
+
+                  <div className="mt-4 flex justify-between">
+                    <p className="overflow-auto max-h-64 whitespace-pre-wrap break-words"
+                    onClick={handleCopyCashuToken}
+                    >
+                      {cashuTokenCreated}
+                    </p>
+                  </div>
+                }
 
                 <div className="mt-4 flex justify-between">
 
