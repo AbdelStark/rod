@@ -20,6 +20,7 @@ import { MINTS_URLS } from "../utils/relay";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import InvoicesHistory from "./components/invoices-history";
 import SendModal from "./components/send-modal";
+import { useRouter } from "next/navigation";
 
 interface Transaction {
   id: number;
@@ -46,62 +47,7 @@ interface Notification {
 export default function Home() {
   // const [balance, setBalance] = useState<number>(10860);
   const [balance, setBalance] = useState<number>(0);
-  // const [transactions, setTransactions] = useState<Transaction[]>([
-  //   {
-  //     id: 1,
-  //     amount: -100,
-  //     date: new Date(Date.now() - 120000),
-  //     description: "Coffee",
-  //     status: "completed",
-  //     recipient: "@starbucks",
-  //     fee: 0,
-  //   },
-  //   {
-  //     id: 2,
-  //     amount: 100,
-  //     date: new Date(Date.now() - 180000),
-  //     description: "Refund",
-  //     status: "completed",
-  //     sender: "@amazon",
-  //     fee: 0,
-  //   },
-  //   {
-  //     id: 3,
-  //     amount: 100,
-  //     date: new Date(Date.now() - 240000),
-  //     description: "Gift from @vegeta",
-  //     status: "completed",
-  //     sender: "@vegeta",
-  //     fee: 0,
-  //   },
-  //   {
-  //     id: 4,
-  //     amount: -55,
-  //     date: new Date(Date.now() - 172800000),
-  //     description: "Movie tickets",
-  //     status: "completed",
-  //     recipient: "@cineplex",
-  //     fee: 0,
-  //   },
-  //   {
-  //     id: 5,
-  //     amount: 42,
-  //     date: new Date(Date.now() - 1814400000),
-  //     description: "Cashback",
-  //     status: "completed",
-  //     sender: "@creditcard",
-  //     fee: 0,
-  //   },
-  //   {
-  //     id: 6,
-  //     amount: -23,
-  //     date: new Date(Date.now() - 1814600000),
-  //     description: "Snacks",
-  //     status: "completed",
-  //     recipient: "@7eleven",
-  //     fee: 0,
-  //   },
-  // ]);
+  const router = useRouter()
 
   const { mnemonic, setMnemonic } = useCashuStore()
   const { publicKey, setPublicKey, setAuth } = useAuth()
@@ -143,13 +89,36 @@ export default function Home() {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [connect, setConnect] = useState<Connect | null>(null);
 
+  const checkWalletSetup = async () => {
+    console.log("checkWalletSetup",)
+
+    const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
+    console.log("isWalletSetup", isWalletSetup)
+
+    if (isWalletSetup && isWalletSetup == "true") {
+      setIsConnected(true)
+    }
+    else if(!isWalletSetup) {
+      return router.push("/onboarding")
+
+    }
+  }
   useEffect(() => {
-    initializeNostrConnect();
-  }, []);
+    checkWalletSetup()
+    // initializeNostrConnect();
+  }, [isConnected]);
   async function initializeNostrConnect() {
     try {
+
+      const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
+      console.log("isWalletSetup", isWalletSetup)
+
+      if (isWalletSetup && isWalletSetup == "true") {
+        return router.push("/onboarding")
+      }
 
       const { secretKey, publicKey, mnemonic } =
         await NostrKeyManager.getOrCreateKeyPair();
@@ -309,13 +278,13 @@ export default function Home() {
           <TabPanel>
             <InvoicesHistory
               onTransactionClick={handleTransactionClick}
-              // transactions={transactions}
+            // transactions={transactions}
             />
           </TabPanel>
           <TabPanel>
             <TransactionHistory
               onTransactionClick={handleTransactionClick}
-              // transactions={transactions}
+            // transactions={transactions}
             />
           </TabPanel>
         </TabPanels>
