@@ -23,7 +23,7 @@ import SendModal from "./components/send-modal";
 import { useRouter } from "next/navigation";
 import { TypeToast, useToast } from "../hooks/useToast";
 import { Proof } from "@cashu/cashu-ts";
-import { getProofs, storeProofs } from "../utils/storage/cashu";
+import { addProofsSpent, getProofs, storeProofs, updateProofsSpent } from "../utils/storage/cashu";
 
 interface Transaction {
   id: number;
@@ -110,6 +110,10 @@ export default function Home() {
           return p;
         }
       })
+
+      if(proofsSpent) {
+        await addProofsSpent(proofsSpent)
+      }
       // console.log("proofs", proofs)
       // await storeProofs(proofs)
       const proofsToUsed: Proof[] = []
@@ -305,11 +309,14 @@ export default function Home() {
 
         <TabList className={"flex gap-5"}>
           <Tab
+            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
           // className={`px-4 py-2 -mb-px border-b-2 transition-colors duration-300
           //   data-[selected]:bg-blue-500  border-transparent text-gray-500 hover:text-blue-500
           // }`}
           >Invoices</Tab>
           <Tab
+            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+
           >Transactions</Tab>
         </TabList>
         <TabPanels>

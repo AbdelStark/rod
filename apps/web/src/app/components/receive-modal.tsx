@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
-import { Dialog, TabGroup, Tab, TabPanels, TabPanel, TabList } from "@headlessui/react";
+import { Dialog, TabGroup, Tab, TabPanels, TabPanel, TabList, DialogTitle, DialogPanel } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
 import { getDecodedToken, MintQuoteResponse, MintQuoteState } from "@cashu/cashu-ts";
@@ -33,13 +33,13 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
   const [mintUrl, setMintUrl] = useState<string | undefined>(MINTS_URLS.MINIBITS)
   const [quote, setQuote] = useState<MintQuoteResponse | undefined>()
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const { requestMintQuote, wallet } = useCashu()
+  const { requestMintQuote, wallet } = useCashu();
+
   const handleGenerate = async () => {
     if (!amount) return;
-    const quote = await requestMintQuote(amount)
-    console.log("quote", quote)
-    setQuote(quote?.request)
-
+    const quote = await requestMintQuote(amount);
+    console.log("quote", quote);
+    setQuote(quote?.request);
 
     const invoicesLocal = await getInvoices()
 
@@ -55,26 +55,24 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
 
     if (invoicesLocal) {
       const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
-
       console.log("invoices", invoices)
       storeInvoices([...invoices, cashuInvoice])
 
-
     } else {
       console.log("no old invoicesLocal", invoicesLocal)
-
       storeInvoices([cashuInvoice])
-
     }
   }
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const numberValue = parseFloat(value);
-    console.log("numberValue", numberValue)
+    console.log("numberValue", numberValue);
 
     // Update changeSet only if the input is a valid number
-    if (!isNaN(numberValue)) {
+    if (!isNaN(numberValue) || numberValue == 0) {
       setAmount(numberValue);
+    } else {
+      setAmount(0)
     }
   };
 
@@ -97,7 +95,7 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
     console.log("response", response)
 
     if (response) {
-      addToast({title:"ecash payment received", type:TypeToast.success})
+      addToast({ title: "ecash payment received", type: TypeToast.success })
       await addProofs(response)
     }
   }
@@ -116,26 +114,39 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
     <Dialog className="relative z-50" onClose={onClose} open={isOpen}>
       <div aria-hidden="true" className="fixed inset-0 bg-black/30" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-medium mb-4">
-            Invoice
-          </Dialog.Title>
+        <DialogPanel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
+
+          <div
+            className="flex gap-3 justify-items-stretch"
+          >
+            <DialogTitle className="text-lg font-medium mb-4">
+              Invoice
+            </DialogTitle>
+        
+          </div>
+
 
           <TabGroup>
 
-            <TabList>
+            <TabList
+              className="gap-3 flex py-3"
+            >
               <Tab
-                className="p-3"
+                className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
               >Lightning</Tab>
-              <Tab>
+              <Tab
+                className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+              >
                 Ecash
               </Tab>
             </TabList>
             <TabPanels>
               <TabPanel>
                 <input
-                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  // className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChange}
+                  placeholder="Amount in satoshis"
                   type="number"
                   value={amount}
                 >
@@ -143,7 +154,6 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
 
                 {quote &&
                   <div>
-
                     <div className="mb-4">
                       <p className="overflow-auto max-h-64 whitespace-pre-wrap break-words">
                         {quote?.request}
@@ -160,7 +170,6 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
                 }
 
                 <div className="mt-4 flex justify-between">
-
 
                   <button
                     className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
@@ -179,27 +188,27 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
               <TabPanel>
 
                 <input
-                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  // className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChangeEcash}
                   type="text"
+                  placeholder="Enter token: cashuXYZ"
                   value={ecash}
                 >
                 </input>
                 <div className="mt-4 flex justify-between">
                   <button
+                    className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+
                     onClick={handleReceiveEcash}
                   >Receive ecash</button>
                 </div>
-
 
               </TabPanel>
             </TabPanels>
           </TabGroup>
 
-
-
-
-        </Dialog.Panel>
+        </DialogPanel>
       </div>
     </Dialog>
   );

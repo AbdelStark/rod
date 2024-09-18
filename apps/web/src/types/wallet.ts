@@ -9,5 +9,5 @@ export interface ICashuInvoice {
   unit?: string;
   state?: string | MintQuoteState;
   direction?: "in" | "out"; // receive or send
-  quoteResponse?:MintQuoteResponse
+  quoteResponse?:MintQuoteResponse;
 }

@@ -1,12 +1,11 @@
 import React, { ChangeEvent, useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { formatDistanceToNow } from "date-fns";
 import { useCashu } from "../../hooks/useCashu";
 import { getDecodedToken, getEncodedToken, getEncodedTokenV4, MintQuoteResponse, Proof, Token } from "@cashu/cashu-ts";
-import { getInvoices, getProofs, storeInvoices, addProofs } from "../../utils/storage/cashu";
-import { ICashuInvoice } from "../../types/wallet";
+import { getProofs, } from "../../utils/storage/cashu";
 import { MINTS_URLS } from "../../utils/relay";
 import { TypeToast, useToast } from "../../hooks/useToast";
+import { ICashuInvoice } from "../../types/wallet";
 
 
 interface SendModalProps {
@@ -34,11 +33,14 @@ const SendModal: React.FC<SendModalProps> = ({
     if (!invoice) return;
     const proofsLocal = await getProofs()
 
+    /** TODO add tx history for paid invoice/ecash */
     if (proofsLocal) {
       let proofs: Proof[] = JSON.parse(proofsLocal)
       console.log("proofs", proofs)
 
       // Filter proofs to spent
+
+      /** TODO better filter of proof based on keysets */
       const lenProof = proofs?.length
       // proofs.slice(lenProof-3, lenProof)
       // const proofsKey  = proofs?.filter((p ) => p?.amount == )
@@ -51,7 +53,6 @@ const SendModal: React.FC<SendModalProps> = ({
       console.log("tokens", tokens)
 
     }
-
 
   }
 
@@ -133,42 +134,6 @@ const SendModal: React.FC<SendModalProps> = ({
 
   }
 
-  const handlePayEcash = async () => {
-    const proofsLocal = await getProofs()
-
-    if (proofsLocal) {
-      let proofs: Proof[] = JSON.parse(proofsLocal)
-      console.log("proofs", proofs)
-
-
-
-
-    } else {
-      if (!ecash) {
-        return;
-      }
-      const encoded = getDecodedToken(ecash)
-      console.log("encoded", encoded)
-
-      const allProofs = encoded.token?.map((t) => t?.proofs)
-
-      let totalAmount = 0
-      allProofs?.map((pT) => pT?.map((p) => {
-        totalAmount += p?.amount
-      }))
-      console.log("totalAmount", totalAmount)
-
-      const response = await wallet?.send(totalAmount, encoded?.token[0]?.proofs);
-      console.log("response", response)
-
-      if (response) {
-        addToast({ title: "ecash payment received", type: TypeToast.success })
-        await addProofs(response?.returnChange)
-      }
-
-    }
-  }
-
   const handleChangeEcash = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setEcash(value);
@@ -184,7 +149,6 @@ const SendModal: React.FC<SendModalProps> = ({
   const handleChangeAmount = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     const numberValue = parseFloat(value);
-    console.log("numberValue", numberValue)
 
     // Update changeSet only if the input is a valid number
     if (!isNaN(numberValue)) {
@@ -193,29 +157,13 @@ const SendModal: React.FC<SendModalProps> = ({
 
   };
 
-
-
-  const handleCopy = async () => {
-    try {
-      if (!quote?.request) return;
-      await navigator.clipboard.writeText(quote?.request);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Reset copy state after 2 seconds
-    } catch (error) {
-      console.error('Failed to copy text:', error);
-    }
-  };
-
-
-
-
   const handleCopyCashuToken = async () => {
     try {
       if (!cashuTokenCreated) return;
       await navigator.clipboard.writeText(cashuTokenCreated);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000); // Reset copy state after 2 seconds
-      addToast({title:"Copy successfully", type:TypeToast.success})
+      addToast({ title: "Copy successfully", type: TypeToast.success })
     } catch (error) {
       console.error('Failed to copy text:', error);
     }
@@ -225,72 +173,69 @@ const SendModal: React.FC<SendModalProps> = ({
       <div aria-hidden="true" className="fixed inset-0 bg-black/30" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
-          <button
-            className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            onClick={onClose}
-          >
-            Close
-          </button>
-          <DialogTitle className="text-lg font-medium mb-4">
-            Invoice
-          </DialogTitle>
 
+          <div
+            className="flex gap-3 justify-items-evenly justify-between"
+          >
+            <DialogTitle className="text-lg font-medium mb-4">
+              Invoice
+            </DialogTitle>
+            <button
+              className="bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+              onClick={onClose}
+            >
+              Close
+            </button>
+
+          </div>
 
           <TabGroup>
 
-            <TabList className={"flex gap-5"}>
-              <Tab>Lightning</Tab>
-              <Tab>ecash</Tab>
+            <TabList className={"flex gap-5 py-3"}>
+              <Tab
+                className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+              >Lightning</Tab>
+              <Tab
+                // className="data-[selected]:bg-blue-500 data-[selected]:text-white data-[hover]:underline"
+                className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+              >eCash</Tab>
 
             </TabList>
             <TabPanels>
               <TabPanel>
                 <input
-                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChangeInvoice}
                   type="text"
                   value={invoice}
                 >
                 </input>
 
-
                 <div className="mt-4 flex justify-between">
-
-
                   <button
                     className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                     onClick={handlePayInvoice}
                   >
                     Pay Lightning
                   </button>
-
                 </div>
               </TabPanel>
 
               <TabPanel>
 
                 <input
-                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
+                  className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChangeAmount}
                   type="number"
                   value={amount}
                 >
                 </input>
 
-
-                {/* <input
-                  className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-                  onChange={handleChangeEcash}
-                  type="text"
-                  value={ecash}
-                >
-                </input> */}
-
                 {cashuTokenCreated &&
 
                   <div className="mt-4 flex justify-between">
                     <p className="overflow-auto max-h-64 whitespace-pre-wrap break-words"
-                    onClick={handleCopyCashuToken}
+                      onClick={handleCopyCashuToken}
                     >
                       {cashuTokenCreated}
                     </p>
@@ -310,18 +255,6 @@ const SendModal: React.FC<SendModalProps> = ({
               </TabPanel>
             </TabPanels>
           </TabGroup>
-
-
-          {/* 
-          <input
-            className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-            onChange={handleChangeInvoice}
-            type="text"
-            value={invoice}
-          >
-          </input> */}
-
-
 
         </DialogPanel>
       </div>
