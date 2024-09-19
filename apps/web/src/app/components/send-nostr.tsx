@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import { NostrKeyManager } from "../../utils/nostr-key-manager";
 import { CONTACTS_DATA } from "../constants/data";
+import { Contact } from "../../types";
 
-interface Contact {
-  handle: string;
-  avatarUrl: string;
-}
 
 interface SendModalProps {
   onClose?:() => void;

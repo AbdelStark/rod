@@ -1,17 +1,7 @@
 import React from "react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
-
-interface Transaction {
-  id: number;
-  amount: number;
-  date: Date;
-  description: string;
-  status: "completed" | "pending" | "failed";
-  recipient?: string;
-  sender?: string;
-  fee?: number;
-}
+import { Transaction } from "../../types";
 
 interface TransactionModalProps {
   transaction: Transaction;

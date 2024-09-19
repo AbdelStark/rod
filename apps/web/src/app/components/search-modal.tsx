@@ -1,11 +1,7 @@
 import React, { useState } from "react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-
-interface Contact {
-  handle: string;
-  avatarUrl: string;
-}
+import { Contact } from "../../types";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -21,17 +17,17 @@ const SearchModal: React.FC<SearchModalProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredContacts = contacts.filter((contact) =>
-    contact.handle.toLowerCase().includes(searchTerm.toLowerCase()),
+    contact?.nip05?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
     <Dialog className="relative z-50" onClose={onClose} open={isOpen}>
       <div aria-hidden="true" className="fixed inset-0 bg-black/30" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-medium mb-4">
+        <DialogPanel className="w-full max-w-md rounded-2xl bg-card-background p-6 shadow-xl">
+          <DialogTitle className="text-lg font-medium mb-4">
             Search Contacts
-          </Dialog.Title>
+          </DialogTitle>
           <div className="relative mb-4">
             <input
               className="w-full bg-gray-800 text-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent"
@@ -48,14 +44,14 @@ const SearchModal: React.FC<SearchModalProps> = ({
             {filteredContacts.map((contact) => (
               <div
                 className="flex items-center p-2 hover:bg-gray-700 rounded-lg transition-colors duration-150"
-                key={contact.handle}
+                key={contact?.nip05}
               >
                 <img
-                  alt={contact.handle}
+                  alt={contact.nip05}
                   className="w-10 h-10 rounded-full mr-3"
-                  src={contact.avatarUrl}
+                  src={contact?.image}
                 />
-                <span>{contact.handle}</span>
+                <span>{contact?.nip05}</span>
               </div>
             ))}
           </div>
@@ -65,7 +61,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
           >
             Close
           </button>
-        </Dialog.Panel>
+        </DialogPanel>
       </div>
     </Dialog>
   );

@@ -23,28 +23,10 @@ import { Proof } from "@cashu/cashu-ts";
 import { addProofsSpent, getProofs } from "../utils/storage/cashu";
 import SendModal from "./components/send-modal";
 import ManageContactModal from "./components/modal-manage-contacts";
+import { Transaction, Contact, Notification } from "../types";
+import { getContacts } from "../utils/storage/nostr";
 
-interface Transaction {
-  id: number;
-  amount: number;
-  date: Date;
-  description: string;
-  status: "completed" | "pending" | "failed";
-  recipient?: string;
-  sender?: string;
-  fee?: number;
-}
-interface Contact {
-  handle: string;
-  avatarUrl: string;
-}
 
-interface Notification {
-  id: number;
-  message: string;
-  date: Date;
-  read: boolean;
-}
 
 export default function Home() {
   // const [balance, setBalance] = useState<number>(10860);
@@ -56,13 +38,14 @@ export default function Home() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
-  const contacts: Contact[] = [
-    { handle: "@gohan", avatarUrl: "/avatar/gohan.jpg" },
-    { handle: "@vegeta", avatarUrl: "/avatar/vegeta.jpeg" },
-    { handle: "@frieza", avatarUrl: "/avatar/frieza.png" },
-    { handle: "@piccolo", avatarUrl: "/avatar/piccolo.jpg" },
-    { handle: "@cell", avatarUrl: "/avatar/cell.jpg" },
-  ];
+  const [contacts, setContacts] = useState<Contact[]>([
+    { nip05: "@gohan", image: "/avatar/gohan.jpg" },
+    { nip05: "@vegeta", image: "/avatar/vegeta.jpeg" },
+    { nip05: "@frieza", image: "/avatar/frieza.png" },
+    // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
+    // { nip05: "@cell", image: "/avatar/cell.jpg" },
+  ])
+
 
   const [notifications, setNotifications] = useState<Notification[]>([
     {
@@ -92,6 +75,7 @@ export default function Home() {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
 
   const { wallet } = useCashu()
   const { addToast } = useToast()
@@ -117,6 +101,22 @@ export default function Home() {
       setBalance(totalAmount)
 
     }
+
+
+  }
+
+  const getContactsLocal = () => {
+    if(isFirstLoadDone) return;
+    const contactLocalStr = getContacts()
+    if(contactLocalStr) {
+      let contactsLocal: Contact[] = JSON.parse(contactLocalStr)
+
+      console.log("contactsLocal",contactsLocal)
+      setContacts([...contacts, ...contactsLocal])
+    }
+   
+
+
   }
   const checkWalletSetup = async () => {
 
@@ -144,6 +144,11 @@ export default function Home() {
   useEffect(() => {
     checkWalletSetup()
   }, [isConnected]);
+  useEffect(() => {
+    getContactsLocal()
+  }, [isConnected]);
+
+
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);

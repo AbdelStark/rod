@@ -5,7 +5,7 @@ import { getTransactions } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MintQuoteState } from "@cashu/cashu-ts";
 import { Contact } from "../../types";
-import { getContacts } from "../../utils/storage/nostr";
+import { addContacts, getContacts, updateContacts } from "../../utils/storage/nostr";
 import { useNostrContext } from "../context";
 import NDK, { NDKEvent, NDKKind, NDKUserProfile } from "@nostr-dev-kit/ndk";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
@@ -14,12 +14,12 @@ import { nip19 } from "nostr-tools";
 import { TypeToast, useToast } from "../../hooks/useToast";
 
 interface ManageContactsProps {
-  contactsProps?: Contact[];
+  contactsProps: Contact[];
   onDeleteContact?: (contact: Contact) => void;
   onAddContact?: (contact: Contact) => void;
 }
 
-const TRANSACTIONS_PER_PAGE = 5;
+const CONTACTS_PER_PAGE = 3;
 
 const ManageContacts: React.FC<ManageContactsProps> = ({
   contactsProps
@@ -27,7 +27,9 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const { ndk } = useNostrContext()
   const [_, setAnimate] = useState(false);
-  const [contacts, setContacts] = useState<Contact[] | undefined>(contactsProps)
+  const [contacts, setContacts] = useState<Contact[] >(contactsProps ?? [
+
+  ])
   const [nostrAddress, setNostrAddress] = useState<string | undefined>()
   const [npubAddress, setNpubAddress] = useState<string | undefined>()
   const [nip05, setNip05] = useState<string | undefined>()
@@ -41,15 +43,13 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
     return contacts?.length ?? 10
   }, [contacts])
 
-
-  const totalPages = Math.ceil(totalContact / TRANSACTIONS_PER_PAGE);
-  const startIndex = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
+  const totalPages = Math.ceil(totalContact / CONTACTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * CONTACTS_PER_PAGE;
   const visibleContacts = contacts?.reverse().slice(
     // const visibleContacts = txInvoices?.reverse().slice(
     startIndex,
-    startIndex + TRANSACTIONS_PER_PAGE,
+    startIndex + CONTACTS_PER_PAGE,
   );
-  console.log("visibleContacts", visibleContacts)
   const goToPreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -66,8 +66,6 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
       clearTimeout(timer);
     };
   }, [currentPage]);
-
-
 
   const handleCheckNostr = async () => {
     console.log("handleCheckNostr", nostrAddress)
@@ -101,7 +99,7 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
           explicitRelayUrls: data.relays,
         });
 
-       await newNdk.connect()
+        await newNdk.connect()
 
 
         const profile = await newNdk.fetchEvent({
@@ -203,16 +201,20 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
     }
 
   }
+
   useEffect(() => {
     const handleGetInvoices = async () => {
-      const invoicesLocal = await getContacts()
+      const contactLocal = await getContacts()
+      console.log("contactLocal", contactLocal)
 
-      if (invoicesLocal) {
-        const invoices: Contact[] = JSON.parse(invoicesLocal)
+      if (contactLocal) {
+        const contacts: Contact[] = JSON.parse(contactLocal)
         // const invoicesPaid = invoices.filter((i) => i?.state === MintQuoteState?.ISSUED || i?.state === MintQuoteState.PAID)
-        setContacts(invoices)
+        setContacts(contacts)
+        console.log("contactsLocal", contacts)
 
       }
+
 
       const profiles = await ndk.fetchEvents({
         kinds: [NDKKind.Metadata],
@@ -221,6 +223,7 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
       console.log("profiles", profiles)
     }
     handleGetInvoices()
+
   }, [])
 
   const handleChangeNostrAddress = (event: ChangeEvent<HTMLInputElement>) => {
@@ -230,14 +233,29 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
   };
 
   const handleRemoveContact = () => {
+    console.log("handleRemoveContact",)
+
     addToast({
       title: "Remove coming soon", type: TypeToast.success
     })
   }
 
+  const handleAddContact = () => {
+
+    const contactLocal = getContacts()
+    console.log("contactLocal", contactLocal)
+    if (!profileToAdd) {
+      return addToast({
+        title: "Remove coming soon", type: TypeToast.error
+      })
+    }
+    addContacts([profileToAdd as Contact])
+    setContacts([...contacts, profileToAdd])
+  }
+
   return (
     <div
-      // className="overflow-y overflow-scroll"
+    // className="overflow-y overflow-scroll"
     >
       <h3 className="section-title mb-4 ">All contacts</h3>
       <TabGroup>
@@ -259,16 +277,34 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
             <div className="card">
               {visibleContacts && visibleContacts?.length > 0 && visibleContacts?.map((c) => (
                 <div
-                  // className="transaction-item px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors duration-150"
+                  className="transaction-item px-4 py-3 hover:bg-gray-700 cursor-pointer transition-colors duration-150"
                   key={c?.handle}
                   onClick={() => {
                     // onTransactionClick(tx);
                   }}
                 >
 
+                  <div
+                    className="flex items-center p-2 hover:bg-gray-700 rounded-lg transition-colors duration-150"
+                    key={c?.handle}
+                  >
+                    {c?.image &&
+                      <img
+                        alt={c?.nip05}
+                        className="w-10 h-10 rounded-full mr-3"
+                        src={c?.image?.toString()}
+                      />
+                    }
+
+                    <span>{c?.nip05}</span>
 
 
+                  </div>
 
+                  <div className="px-3">
+                    <button onClick={handleRemoveContact}>Remove</button>
+                  </div>
+                  {/* 
                   <div className="justify-between items-center mt-1">
                     <div>
 
@@ -284,13 +320,8 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
                     </div>
                     <p className="text-sm text-text-secondary">
                       {c?.handle}
-                      {/* {formatDate(new Date(tx?.date ?? new Date()))} */}
                     </p>
-                  </div>
-
-                  <div>
-                    <button onClick={handleRemoveContact}>Remove</button>
-                  </div>
+                  </div> */}
 
 
 
@@ -397,7 +428,7 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
               <button
                 className="mt-6 w-full bg-accent text-white rounded-lg py-2 hover:bg-opacity-90 transition-colors duration-150"
 
-                onClick={ handleAddNostrAddressContact}
+                onClick={handleAddContact}
               >
 
                 Add contact

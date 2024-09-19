@@ -16,7 +16,7 @@ const ManageContactModal: React.FC<TransactionModalProps> = ({
   onClose,
   isOpen
 }) => {
-  console.log("contacts", contacts)
+  // console.log("contacts", contacts)
   return (
     <Dialog className="relative z-50" onClose={onClose} open={isOpen}>
       <div aria-hidden="true" className="fixed inset-0 bg-black/30" />

@@ -1,3 +1,5 @@
+import { NDKUserProfile } from "@nostr-dev-kit/ndk";
+
 export interface Transaction {
     id: number;
     amount: number;
@@ -8,9 +10,9 @@ export interface Transaction {
     sender?: string;
     fee?: number;
 }
-export interface Contact {
-    handle: string;
-    avatarUrl: string;
+export interface Contact extends NDKUserProfile {
+    handle?: string;
+    avatarUrl?: string;
 }
 
 export interface Notification {

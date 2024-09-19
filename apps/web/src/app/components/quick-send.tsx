@@ -1,10 +1,7 @@
 import React, { useRef } from "react";
 import Image from "next/image";
+import { Contact } from "../../types";
 
-interface Contact {
-  handle: string;
-  avatarUrl: string;
-}
 
 interface QuickSendProps {
   contacts: Contact[];
@@ -43,18 +40,23 @@ const QuickSend: React.FC<QuickSendProps> = ({ contacts, onSend, onOpen }) => {
               <button
                 className="w-16 h-16 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-accent transition-shadow duration-200"
                 onClick={() => {
-                  onSend(contact.handle);
+                  if (contact?.nip05) {
+                    onSend(contact?.nip05);
+                  }
                 }}
               >
-                <Image
-                  alt={`Avatar of ${contact.handle}`}
-                  height={64}
-                  src={contact.avatarUrl}
-                  width={64}
-                />
+                {contact?.image &&
+                  <Image
+                    alt={`Avatar of ${contact?.handle}`}
+                    height={64}
+                    src={contact?.image}
+                    width={64}
+                  />
+                }
+
               </button>
               <span className="text-xs text-text-secondary mt-2">
-                {contact.handle}
+                {contact?.handle}
               </span>
             </div>
           ))}
