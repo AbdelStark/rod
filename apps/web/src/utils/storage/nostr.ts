@@ -25,3 +25,25 @@ export const updatePubkeyContacts =  (contacts: string[]) => {
   return contacts;
 
 }
+
+export const storeContacts = (contacts:string[]) => {
+
+  localStorage.setItem(KEY_NOSTR.CONTACTS_PUBKEY, JSON.stringify(contacts));
+};
+
+export const getContacts= () => {
+
+  return localStorage.getItem(KEY_NOSTR.CONTACTS_PUBKEY);
+};
+
+export const updateContacts =  (contacts: string[]) => {
+  const proofsLocal =  getContacts()
+  if (!proofsLocal) {
+    storeContacts([...contacts])
+  } else {
+    storeContacts([...contacts])
+  }
+
+  return contacts;
+
+}

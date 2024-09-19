@@ -22,6 +22,7 @@ import { TypeToast, useToast } from "../hooks/useToast";
 import { Proof } from "@cashu/cashu-ts";
 import { addProofsSpent, getProofs } from "../utils/storage/cashu";
 import SendModal from "./components/send-modal";
+import ManageContactModal from "./components/modal-manage-contacts";
 
 interface Transaction {
   id: number;
@@ -87,6 +88,7 @@ export default function Home() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isManageContactsModalOpen, setIsManageContactsModalOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -232,6 +234,14 @@ export default function Home() {
           setIsSearchModalOpen(false);
         }}
       />
+
+      <ManageContactModal
+        contacts={contacts}
+        isOpen={isManageContactsModalOpen}
+        onClose={() => {
+          setIsManageContactsModalOpen(false);
+        }}
+      />
       <Balance balance={balance} />
       <Actions
         onGift={handleGift}
@@ -239,7 +249,11 @@ export default function Home() {
         onScan={handleScan}
         onSend={handleSend}
       />
-      <QuickSend contacts={contacts} onSend={handleQuickSend} />
+      <QuickSend contacts={contacts} onSend={handleQuickSend}
+        onOpen={() => {
+          setIsManageContactsModalOpen(true)
+        }}
+      />
 
       <TabGroup>
 

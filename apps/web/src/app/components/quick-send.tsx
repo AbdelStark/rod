@@ -9,9 +9,10 @@ interface Contact {
 interface QuickSendProps {
   contacts: Contact[];
   onSend: (handle: string) => void;
+  onOpen?: () => void;
 }
 
-const QuickSend: React.FC<QuickSendProps> = ({ contacts, onSend }) => {
+const QuickSend: React.FC<QuickSendProps> = ({ contacts, onSend, onOpen }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -105,6 +106,13 @@ const QuickSend: React.FC<QuickSendProps> = ({ contacts, onSend }) => {
           </>
         )}
       </div>
+
+      {onOpen &&
+        <button onClick={onOpen}>
+          Manage contacts
+        </button>
+      }
+
     </div>
   );
 };
