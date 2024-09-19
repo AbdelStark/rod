@@ -11,7 +11,16 @@ import TransactionHistory from "./components/transaction-history";
 import NotificationModal from "./components/notification-modal";
 import SearchModal from "./components/search-modal";
 import TransactionModal from "./components/transaction-modal";
+import ReceiveModal from "./components/receive-modal";
+import { useAuth, useCashuStore } from "../store";
 import Settings from "./components/settings";
+import { useCashu } from "../hooks/useCashu";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import InvoicesHistory from "./components/invoices-history";
+import { useRouter } from "next/navigation";
+import { TypeToast, useToast } from "../hooks/useToast";
+import { Proof } from "@cashu/cashu-ts";
+import { addProofsSpent, getProofs } from "../utils/storage/cashu";
 import SendModal from "./components/send-modal";
 
 interface Transaction {
@@ -37,64 +46,12 @@ interface Notification {
 }
 
 export default function Home() {
-  const [balance, setBalance] = useState<number>(10860);
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: 1,
-      amount: -100,
-      date: new Date(Date.now() - 120000),
-      description: "Coffee",
-      status: "completed",
-      recipient: "@starbucks",
-      fee: 0,
-    },
-    {
-      id: 2,
-      amount: 100,
-      date: new Date(Date.now() - 180000),
-      description: "Refund",
-      status: "completed",
-      sender: "@amazon",
-      fee: 0,
-    },
-    {
-      id: 3,
-      amount: 100,
-      date: new Date(Date.now() - 240000),
-      description: "Gift from @vegeta",
-      status: "completed",
-      sender: "@vegeta",
-      fee: 0,
-    },
-    {
-      id: 4,
-      amount: -55,
-      date: new Date(Date.now() - 172800000),
-      description: "Movie tickets",
-      status: "completed",
-      recipient: "@cineplex",
-      fee: 0,
-    },
-    {
-      id: 5,
-      amount: 42,
-      date: new Date(Date.now() - 1814400000),
-      description: "Cashback",
-      status: "completed",
-      sender: "@creditcard",
-      fee: 0,
-    },
-    {
-      id: 6,
-      amount: -23,
-      date: new Date(Date.now() - 1814600000),
-      description: "Snacks",
-      status: "completed",
-      recipient: "@7eleven",
-      fee: 0,
-    },
-  ]);
+  // const [balance, setBalance] = useState<number>(10860);
+  const [balance, setBalance] = useState<number>(0);
+  const router = useRouter()
 
+  const { setMnemonic } = useCashuStore()
+  const { setAuth } = useAuth()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
@@ -128,35 +85,63 @@ export default function Home() {
   ]);
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [connect, setConnect] = useState<Connect | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    initializeNostrConnect();
-  }, []);
+  const { wallet } = useCashu()
+  const { addToast } = useToast()
 
-  async function initializeNostrConnect() {
-    try {
-      const { secretKey, publicKey } =
-        await NostrKeyManager.getOrCreateKeyPair();
-      console.log("Nostr keypair ready:", { publicKey });
+  const getProofsWalletAndBalance = async () => {
+    const proofsLocal = getProofs()
+    if (proofsLocal) {
+      /** TODO clean proofs */
+      let proofs: Proof[] = JSON.parse(proofsLocal)
+      const proofsSpent = await wallet?.checkProofsSpent(proofs)
+      // console.log("proofsSpent", proofsSpent)
+      proofs = proofs?.filter((p) => {
+        if (!proofsSpent?.includes(p)) {
+          return p;
+        }
+      })
 
-      const newConnect = new Connect({
-        secretKey,
-        relay: "wss://nostr.vulpem.com",
-      });
-      newConnect.events.on("connect", (walletPubkey: string) => {
-        console.log("Connected with wallet:", walletPubkey);
-      });
-      await newConnect.init();
+      if (proofsSpent) {
+        await addProofsSpent(proofsSpent)
+      }
+      const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
+      console.log("totalAmount", totalAmount)
+      setBalance(totalAmount)
 
-      setConnect(newConnect);
-    } catch (error) {
-      console.error("Error initializing Nostr keypair:", error);
     }
   }
+  const checkWalletSetup = async () => {
+
+    const isWalletSetup = await NostrKeyManager.getIsWalletSetup()
+
+    if (isConnected) return;
+
+    if (isWalletSetup && isWalletSetup == "true") {
+      const result = await NostrKeyManager.getDecryptedPrivateKey()
+      if (!result) {
+
+      } else {
+        const { secretKey, mnemonic, publicKey } = result
+        setAuth(publicKey, secretKey,)
+        setMnemonic(mnemonic)
+        addToast({ title: "GM! Connected successfully", type: TypeToast.success })
+        setIsConnected(true)
+        await getProofsWalletAndBalance()
+      }
+
+    } else if (!isWalletSetup) {
+      return router.push("/onboarding")
+    }
+  }
+  useEffect(() => {
+    checkWalletSetup()
+  }, [isConnected]);
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -166,39 +151,12 @@ export default function Home() {
     setSelectedTransaction(null);
   };
 
-  const handleTransaction = (amount: number) => {
-    setBalance((prevBalance) => prevBalance + amount);
-    setTransactions((prevTransactions) => [
-      {
-        id: prevTransactions.length + 1,
-        amount,
-        date: new Date(),
-        description: amount > 0 ? "Received" : "Sent",
-        status: "completed",
-      },
-      ...prevTransactions,
-    ]);
-  };
-
   const handleSend = () => {
     setIsSendModalOpen(true);
   };
 
-  const handleSendConfirm = (amount: number, recipient: string) => {
-    handleTransaction(-amount);
-    setNotifications((prevNotifications) => [
-      {
-        id: prevNotifications.length + 1,
-        message: `You sent ${amount} sats to ${recipient}`,
-        date: new Date(),
-        read: false,
-      },
-      ...prevNotifications,
-    ]);
-  };
-
   const handleReceive = () => {
-    handleTransaction(100);
+    setIsReceiveModalOpen(true);
   };
   const handleScan = () => {
     console.log("Scanning QR code");
@@ -254,6 +212,19 @@ export default function Home() {
         }}
         onMarkAsRead={handleMarkNotificationsAsRead}
       />
+
+      <ReceiveModal
+        isOpen={isReceiveModalOpen}
+        onClose={() => {
+          setIsReceiveModalOpen(false);
+        }}
+      />
+      <SendModal
+        isOpen={isSendModalOpen}
+        onClose={() => {
+          setIsSendModalOpen(false);
+        }}
+      />
       <SearchModal
         contacts={contacts}
         isOpen={isSearchModalOpen}
@@ -269,10 +240,35 @@ export default function Home() {
         onSend={handleSend}
       />
       <QuickSend contacts={contacts} onSend={handleQuickSend} />
-      <TransactionHistory
-        onTransactionClick={handleTransactionClick}
-        transactions={transactions}
-      />
+
+      <TabGroup>
+
+        <TabList className={"flex gap-5"}>
+          <Tab
+            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+          >Invoices</Tab>
+          <Tab
+            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+
+          >Transactions</Tab>
+        </TabList>
+        <TabPanels>
+
+          <TabPanel>
+            <InvoicesHistory
+              onTransactionClick={handleTransactionClick}
+            // transactions={transactions}
+            />
+          </TabPanel>
+          <TabPanel>
+            <TransactionHistory
+              onTransactionClick={handleTransactionClick}
+            // transactions={transactions}
+            />
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
+
       {selectedTransaction ? (
         <TransactionModal
           onClose={handleCloseTransactionModal}
@@ -287,14 +283,7 @@ export default function Home() {
           }}
         />
       ) : null}
-      <SendModal
-        contacts={contacts}
-        isOpen={isSendModalOpen}
-        onClose={() => {
-          setIsSendModalOpen(false);
-        }}
-        onSend={handleSendConfirm}
-      />
+
     </div>
   );
 }
