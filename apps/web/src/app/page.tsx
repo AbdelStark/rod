@@ -38,20 +38,22 @@ export default function Home() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
-  const [contacts, setContacts] = useState<Contact[]>([
-    { nip05: "@gohan", image: "/avatar/gohan.jpg",
-      displayName:"gohan",
-     },
-    { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
-      displayName:"vegeta",
+  const [contacts, setContacts] = useState<Contact[]>(
+    [
+    // { nip05: "@gohan", image: "/avatar/gohan.jpg",
+    //   displayName:"gohan",
+    //  },
+    // { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
+    //   displayName:"vegeta",
 
-     },
-    { nip05: "@frieza", image: "/avatar/frieza.png",
-      displayName:"frieza"
-     },
+    //  },
+    // { nip05: "@frieza", image: "/avatar/frieza.png",
+    //   displayName:"frieza"
+    //  },
     // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
     // { nip05: "@cell", image: "/avatar/cell.jpg" },
-  ])
+  ]
+)
 
 
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -118,9 +120,10 @@ export default function Home() {
     if(contactLocalStr) {
       let contactsLocal: Contact[] = JSON.parse(contactLocalStr)
 
+      const contactsSet = new Set([...contactsLocal])
       console.log("contactsLocal",contactsLocal)
-      setContacts([...contacts, ...contactsLocal])
-      setContactsStore([...contacts, ...contactsLocal])
+      setContacts(Array.from(contactsSet))
+      setContactsStore(Array.from(contactsSet))
     }
    
 

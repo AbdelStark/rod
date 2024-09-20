@@ -6,6 +6,7 @@ import { getProofs, } from "../../utils/storage/cashu";
 import { MINTS_URLS } from "../../utils/relay";
 import { TypeToast, useToast } from "../../hooks/useToast";
 import SendNostr from "./send-nostr";
+import { usePayment } from "../../hooks/usePayment";
 
 
 interface SendModalProps {
@@ -27,32 +28,57 @@ const SendModal: React.FC<SendModalProps> = ({
   const [invoice, setInvoice] = useState<string | undefined>()
   const [, setIsCopied] = useState<boolean>(false);
   const {  meltTokens, wallet } = useCashu()
-  const handlePayInvoice = async () => {
-    if (!invoice) return;
-    const proofsLocal = getProofs()
+  const {handlePayInvoice} = usePayment()
+  // const handlePayInvoice = async () => {
+  //   if (!invoice) return;
+  //   const proofsLocalStr = getProofs()
 
-    /** TODO add tx history for paid invoice/ecash */
-    if (proofsLocal) {
-      let proofs: Proof[] = JSON.parse(proofsLocal)
-      console.log("proofs", proofs)
+  //   /** TODO add tx history for paid invoice/ecash */
+  //   if (proofsLocalStr) {
+  //     let proofsLocal: Proof[] = JSON.parse(proofsLocalStr)
+  //     console.log("proofs", proofsLocal)
 
-      // Filter proofs to spent
+  //     // Filter proofs to spent
 
-      /** TODO better filter of proof based on keysets */
-      const lenProof = proofs?.length
-      // proofs.slice(lenProof-3, lenProof)
-      // const proofsKey  = proofs?.filter((p ) => p?.amount == )
-      const tokens = await meltTokens(invoice, proofs?.slice(lenProof - 1, lenProof))
-      console.log("tokens", tokens)
+  //     /** TODO better filter of proof based on keysets */
+  //     // const lenProof = proofs?.length
+  //     const proofsSpent = await wallet?.checkProofsSpent(proofsLocal)
 
-    } else {
+  //     // Filter proofs to spent
 
-      const tokens = await meltTokens(invoice)
-      console.log("tokens", tokens)
+  //     /** TODO better filter of proof based on keysets */
+  //     console.log("proofsSpent", proofsSpent)
 
-    }
+  //     let proofs = Array.from(proofsLocal && proofsLocal)
 
-  }
+  //     if (proofsSpent) {
+  //         proofs = proofs?.filter((p ) => !proofsSpent?.includes(p))
+  //         // proofs = Array.from(new Set([...proofsSpent, ...proofsLocal]))
+  //     }
+  //     const lenProof = proofs?.length
+  //     console.log("proofs", proofs)
+
+  //     if (lenProof && proofs) {
+  //         // proofs.slice(lenProof-3, lenProof)
+  //         // const proofsKey  = proofs?.filter((p ) => p?.amount == )
+  //         // const tokens = await meltTokens(invoice, proofs?.slice(lenProof - 1, lenProof))
+  //         const tokens = await meltTokens(invoice, proofs?.slice(lenProof - 1, lenProof))
+  //         console.log("tokens", tokens)
+  //         return tokens;
+  //     }
+  //     // proofs.slice(lenProof-3, lenProof)
+  //     // const proofsKey  = proofs?.filter((p ) => p?.amount == )
+  //     const tokens = await meltTokens(invoice, proofs?.slice(lenProof - 1, lenProof))
+  //     console.log("tokens", tokens)
+
+  //   } else {
+
+  //     const tokens = await meltTokens(invoice)
+  //     console.log("tokens", tokens)
+
+  //   }
+
+  // }
 
   const handleGenerateEcash = async () => {
 
@@ -208,7 +234,7 @@ const SendModal: React.FC<SendModalProps> = ({
                 <div className="mt-4 flex justify-between">
                   <button
                     className="bg-accent text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
-                    onClick={handlePayInvoice}
+                    onClick={() => handlePayInvoice(invoice)}
                   >
                     Pay Lightning
                   </button>

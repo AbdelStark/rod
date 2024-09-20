@@ -5,6 +5,8 @@ import { Contact } from "../../types";
 import { useCashuStore } from "../../store";
 import { TypeToast, useToast } from "../../hooks/useToast";
 
+import { Invoice, LightningAddress } from "@getalby/lightning-tools";
+import { usePayment } from "../../hooks/usePayment";
 
 interface SendModalProps {
   onClose?: () => void;
@@ -17,7 +19,6 @@ const SendNostr: React.FC<SendModalProps> = ({
   const { addToast } = useToast()
 
   const { contacts, setContacts } = useCashuStore()
-  console.log("contacts", contacts)
   // const [contacts, _] = useState<Contact[]>(CONTACTS_DATA)
   const [amount, setAmount] = useState<string>("");
   const [contactSelected, setContactSelected] = useState<Contact | undefined>()
@@ -25,6 +26,10 @@ const SendNostr: React.FC<SendModalProps> = ({
   const [step, setStep] = useState<"amount" | "recipient" | "confirm">(
     "amount",
   );
+  const [invoice, setInvoice] = useState<string | undefined>()
+
+
+  const { handlePayInvoice } = usePayment()
 
   const handleNext = () => {
     if (step === "amount" && amount) {
@@ -43,10 +48,9 @@ const SendNostr: React.FC<SendModalProps> = ({
   };
 
 
-  const onTipPress = async (contact:Contact) => {
+  const onTipPress = async (contact: Contact) => {
 
-    if (!event) return;
-
+    console.log("onTip")
     if (!amount) {
 
       addToast({ title: "Zap send", type: "error" })
@@ -56,6 +60,42 @@ const SendNostr: React.FC<SendModalProps> = ({
     if (!contact?.lud16) {
       addToast({ title: "This profile doesn't have a lud16 Lightning address", type: "error" })
       return;
+    }
+
+
+    const lnAddress = contact?.lud16
+
+    const ln = new LightningAddress(lnAddress);
+
+    await ln.fetch();
+    // request an invoice for X satoshis
+    // this returns a new `Invoice` class that can also be used to validate the payment
+    const invoice = await ln.requestInvoice({ satoshi: Number(amount) });
+
+    console.log(invoice.paymentRequest); // print the payment request
+    console.log(invoice.paymentHash); // print the payment hash
+
+
+    setInvoice(invoice?.paymentRequest
+
+    )
+
+    if (!invoice) {
+      return addToast({
+        title: "Invoice creation failed",
+        type: TypeToast.error
+      })
+    }
+
+    const response = await handlePayInvoice(invoice?.paymentRequest)
+    console.log("response", response)
+
+    if (response) {
+
+      addToast({
+        title: "Payment sent",
+        type: TypeToast.success
+      })
     }
 
     // const invoice = await getInvoiceFromLnAddress(contact?.lud16, Number(amount))
@@ -71,18 +111,17 @@ const SendNostr: React.FC<SendModalProps> = ({
       // const { secretKey } = await NostrKeyManager.getOrCreateKeyPair();
       // console.log("Retrieved Nostr secret key:", secretKey);
       // onSend(parseFloat(amount), recipient);
-      if(!contactSelected) {
+      if (!contactSelected) {
 
         return addToast({
-          title:"Please select a contact",
-          type:TypeToast.success
+          title: "Please select a contact",
+          type: TypeToast.success
         })
       }
       onTipPress(contactSelected)
-      onClose && onClose();
-      setStep("amount");
-      setAmount("");
-      setRecipient("");
+      // setStep("amount");
+      // setAmount("");
+      // setRecipient("");
     } catch (error) {
       console.error("Error retrieving Nostr secret key:", error);
     }
@@ -118,13 +157,19 @@ const SendNostr: React.FC<SendModalProps> = ({
               className="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent mb-2"
               onChange={(e) => {
                 setRecipient(e.target.value);
+                const pubkey = e?.target?.value;
+                const find = contacts?.find((c) => c?.pubkey === pubkey)
+
+                if (find) {
+                  setContactSelected(find)
+                }
               }}
               value={recipient}
             >
               <option value="">Select a contact</option>
               {contacts?.map((contact) => (
-                <option key={contact?.pubkey} value={contact.displayName}
-                  onSelect={() => {
+                <option key={contact?.pubkey} value={contact.pubkey}
+                  onFocus={() => {
                     setContactSelected(contact)
                     console.log("contact selected", contact)
                   }}
@@ -149,8 +194,12 @@ const SendNostr: React.FC<SendModalProps> = ({
         )}
 
         {step === "confirm" && (
-          <div>
-            <p className="text-text-secondary mb-2">
+          <div
+            className="text-text-secondary mb-2 overflow-auto max-h-64 whitespace-pre-wrap break-words"
+          >
+            <p
+              // className="text-text-secondary mb-2"
+              className="text-text-secondary mb-2 overflow-auto max-h-64 whitespace-pre-wrap break-words">
               Confirm payment of {amount} sats to {recipient}
             </p>
             <button

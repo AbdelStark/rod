@@ -13,6 +13,7 @@ import Image from "next/image";
 import { nip19 } from "nostr-tools";
 import { TypeToast, useToast } from "../../hooks/useToast";
 import { useCashuStore } from "../../store";
+import { useProfileMetadata } from "../../hooks/useProfileMetadata";
 
 interface ManageContactsProps {
   contactsProps: Contact[];
@@ -35,9 +36,10 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
     : [...contactsStore]
   )
   const [nostrAddress, setNostrAddress] = useState<string | undefined>()
-  const [profileEvent, setProfileEvent] = useState<NDKEvent | undefined>()
-  const [profileToAdd, setProfileToAdd] = useState<NDKUserProfile | undefined>()
+  // const [profileEvent, setProfileEvent] = useState<NDKEvent | undefined>()
+  // const [profileToAdd, setProfileToAdd] = useState<NDKUserProfile | undefined>()
 
+  const { handleCheckNostr, user, eventProfile } = useProfileMetadata()
   const { addToast } = useToast()
   const totalContact = useMemo(() => {
 
@@ -68,70 +70,7 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
     };
   }, [currentPage]);
 
-  const handleCheckNostr = async () => {
-    console.log("handleCheckNostr", nostrAddress)
 
-    if (!nostrAddress) return;
-    console.log("nostrAddress", nostrAddress)
-
-
-    if (nostrAddress?.includes("npub") || nostrAddress?.includes("nprofile")) {
-
-
-      const addressPub = await nip19.decode(nostrAddress)
-      console.log("addressPub data", addressPub?.data)
-
-      const dataStr = JSON.stringify(addressPub?.data)
-
-      const data: {
-        pubkey?: string,
-        relays?: string[],
-      } = JSON.parse(dataStr)
-
-      if (typeof data?.pubkey === "string" && typeof data?.relays !== "undefined") {
-        console.log("pubkey", data?.pubkey)
-        console.log("relays", data?.relays)
-
-        const newNdk = new NDK({
-          explicitRelayUrls: data.relays,
-        });
-
-        await newNdk.connect()
-
-
-        const profile = await newNdk.fetchEvent({
-          kinds: [NDKKind.Metadata],
-          authors: [data.pubkey]
-        })
-        console.log("profile", profile)
-        if (profile) {
-          setProfileEvent(profile)
-          const user = newNdk.getUser({ pubkey: profile?.pubkey });
-          const profileUser = await user.fetchProfile();
-          if (profileUser) {
-            setProfileToAdd(profileUser)
-          }
-        }
-      }
-
-    } else {
-      const profile = await ndk.fetchEvent({
-        kinds: [NDKKind.Metadata],
-        authors: [nostrAddress]
-
-      })
-      console.log("profile", profile)
-      if (profile) {
-        setProfileEvent(profile)
-        const user = ndk.getUser({ pubkey: profile?.pubkey });
-        const profileUser = await user.fetchProfile();
-        if (profileUser) {
-          setProfileToAdd(profileUser)
-        }
-      }
-    }
-
-  }
 
 
   useEffect(() => {
@@ -160,23 +99,23 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
   };
 
-  const handleRemoveContact = (contactToRemove:Contact) => {
+  const handleRemoveContact = (contactToRemove: Contact) => {
     console.log("handleRemoveContact",)
 
     const contactLocal = getContacts()
-    if(contactLocal) {
+    if (contactLocal) {
       const contactsExisting: Contact[] = JSON.parse(contactLocal)
 
       const oldLen = contactsExisting?.length;
       const newContacts = contactsExisting.filter((c) => c?.nip05 != contactToRemove?.nip05)
       const newLen = newContacts?.length;
       updateContacts(newContacts)
-      console.log("newContacts",newContacts)
+      console.log("newContacts", newContacts)
 
       setContactsStore(newContacts)
       setContacts(newContacts)
 
-      if(newLen != oldLen) {
+      if (newLen != oldLen) {
         addToast({
           title: "Remove contact successful", type: TypeToast.success
         })
@@ -185,42 +124,42 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
           title: "Remove failed", type: TypeToast.warning
         })
       }
-  
+
     }
- 
+
   }
 
   const handleAddContact = () => {
 
     const contactLocal = getContacts()
-    if (!profileToAdd) {
+    if (!user) {
       return addToast({
         title: "Remove coming soon", type: TypeToast.error
       })
     }
     let newContact: Contact = {
-      ...profileToAdd,
+      ...user,
       pubkey: nostrAddress,
       nprofile: nostrAddress
     }
     if (contactLocal) {
       const contactsExisting: Contact[] = JSON.parse(contactLocal)
 
-      const isFind = contactsExisting.find((c) => c?.nip05 === profileToAdd?.nip05)
+      const isFind = contactsExisting.find((c) => c?.nip05 === user?.nip05)
       if (isFind) {
         return addToast({
           title: "Contact already added", type: TypeToast.warning
         })
       }
-     
+
       addContacts([newContact])
-      setContacts([...contacts, profileToAdd])
+      setContacts([...contacts, user])
       addToast({ title: "Contact added", type: TypeToast.success })
     } else {
-      
-   
+
+
       addContacts([newContact])
-      setContacts([...contacts, profileToAdd])
+      setContacts([...contacts, user])
       addToast({ title: "Contact added", type: TypeToast.success })
     }
 
@@ -340,14 +279,14 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
               <div>
 
-                {profileEvent &&
+                {eventProfile &&
 
                   <div>
 
                   </div>
                 }
 
-                {profileToAdd &&
+                {user &&
                   <>
 
                     {/* {profileToAdd?.image &&
@@ -364,24 +303,24 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
                     <div>
                       <p className="text-sm text-text-secondary">
-                        NIP05:  {profileToAdd?.nip05}
+                        NIP05:  {user?.nip05}
                       </p>
                       <div >
                         <p className="text-sm text-text-secondary">
-                          Lightning address:  {profileToAdd?.lud16}
+                          Lightning address:  {user?.lud16}
                         </p>
                       </div>
                       <p className="text-sm text-text-secondary">
-                        Name:  {profileToAdd?.displayName}
+                        Name:  {user?.displayName}
                       </p>
                       <p className="text-sm text-text-secondary">
-                        About:  {profileToAdd?.about}
+                        About:  {user?.about}
                       </p>
                       <p className="text-sm text-text-secondary">
-                        Bio:  {profileToAdd?.bio}
+                        Bio:  {user?.bio}
                       </p>
                       <p className="text-sm text-text-secondary">
-                        Name:  {profileToAdd?.name}
+                        Name:  {user?.name}
                       </p>
                     </div>
                   </>
@@ -391,7 +330,11 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
               <button
                 className="mt-6 w-full bg-accent text-white rounded-lg py-2 hover:bg-opacity-90 transition-colors duration-150"
 
-                onClick={handleCheckNostr}
+                onClick={async () => {
+
+
+                  await handleCheckNostr(nostrAddress)
+                }}
               >
 
                 Check address
