@@ -13,6 +13,9 @@ export interface Transaction {
 export interface Contact extends NDKUserProfile {
     handle?: string;
     avatarUrl?: string;
+    pubkey?:string;
+    nprofile?:string;
+    eventId?:string;
 }
 
 export interface Notification {

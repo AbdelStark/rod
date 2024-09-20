@@ -33,15 +33,22 @@ export default function Home() {
   const [balance, setBalance] = useState<number>(0);
   const router = useRouter()
 
-  const { setMnemonic } = useCashuStore()
+  const { setMnemonic, setContacts:setContactsStore } = useCashuStore()
   const { setAuth } = useAuth()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
   const [contacts, setContacts] = useState<Contact[]>([
-    { nip05: "@gohan", image: "/avatar/gohan.jpg" },
-    { nip05: "@vegeta", image: "/avatar/vegeta.jpeg" },
-    { nip05: "@frieza", image: "/avatar/frieza.png" },
+    { nip05: "@gohan", image: "/avatar/gohan.jpg",
+      displayName:"gohan",
+     },
+    { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
+      displayName:"vegeta",
+
+     },
+    { nip05: "@frieza", image: "/avatar/frieza.png",
+      displayName:"frieza"
+     },
     // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
     // { nip05: "@cell", image: "/avatar/cell.jpg" },
   ])
@@ -113,6 +120,7 @@ export default function Home() {
 
       console.log("contactsLocal",contactsLocal)
       setContacts([...contacts, ...contactsLocal])
+      setContactsStore([...contacts, ...contactsLocal])
     }
    
 

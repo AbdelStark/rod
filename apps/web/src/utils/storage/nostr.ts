@@ -29,7 +29,7 @@ export const updatePubkeyContacts =  (contacts: string[]) => {
 
 export const storeContacts = (contacts:Contact[]) => {
 
-  localStorage.setItem(KEY_NOSTR.CONTACTS_PUBKEY, JSON.stringify(contacts));
+  localStorage.setItem(KEY_NOSTR.CONTACTS, JSON.stringify(contacts));
 };
 
 export const getContacts= () => {

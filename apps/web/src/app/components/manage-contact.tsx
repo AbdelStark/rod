@@ -12,6 +12,7 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import Image from "next/image";
 import { nip19 } from "nostr-tools";
 import { TypeToast, useToast } from "../../hooks/useToast";
+import { useCashuStore } from "../../store";
 
 interface ManageContactsProps {
   contactsProps: Contact[];
@@ -25,15 +26,15 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
   contactsProps
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const { contacts: contactsStore, setContacts: setContactsStore } = useCashuStore()
   const { ndk } = useNostrContext()
   const [_, setAnimate] = useState(false);
-  const [contacts, setContacts] = useState<Contact[] >(contactsProps ?? [
-
-  ])
+  const [contacts, setContacts] = useState<Contact[]>(contactsProps ?
+    [...contactsProps,
+    ...contactsStore]
+    : [...contactsStore]
+  )
   const [nostrAddress, setNostrAddress] = useState<string | undefined>()
-  const [npubAddress, setNpubAddress] = useState<string | undefined>()
-  const [nip05, setNip05] = useState<string | undefined>()
-  const [lud16, setLud16] = useState<string | undefined>()
   const [profileEvent, setProfileEvent] = useState<NDKEvent | undefined>()
   const [profileToAdd, setProfileToAdd] = useState<NDKUserProfile | undefined>()
 
@@ -78,18 +79,14 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
 
       const addressPub = await nip19.decode(nostrAddress)
-      console.log("addressPub", addressPub)
       console.log("addressPub data", addressPub?.data)
 
       const dataStr = JSON.stringify(addressPub?.data)
-      console.log("dataStr", dataStr)
 
       const data: {
         pubkey?: string,
         relays?: string[],
       } = JSON.parse(dataStr)
-      console.log("data", data)
-
 
       if (typeof data?.pubkey === "string" && typeof data?.relays !== "undefined") {
         console.log("pubkey", data?.pubkey)
@@ -136,85 +133,16 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
   }
 
-  const handleAddNostrAddressContact = async () => {
-
-    if (!nostrAddress) return;
-    console.log("nostrAddress", nostrAddress)
-
-
-    if (nostrAddress?.includes("npub") || nostrAddress?.includes("nprofile")) {
-
-
-      const addressPub = await nip19.decode(nostrAddress)
-      console.log("addressPub", addressPub)
-      console.log("addressPub data", addressPub?.data)
-
-      const dataStr = JSON.stringify(addressPub?.data)
-      console.log("dataStr", dataStr)
-
-      const data: {
-        pubkey?: string,
-        relays?: string[],
-      } = JSON.parse(dataStr)
-      console.log("data", data)
-
-
-      if (typeof data?.pubkey === "string" && typeof data?.relays !== "undefined") {
-        console.log("pubkey", data?.pubkey)
-        console.log("relays", data?.relays)
-
-        const newNdk = new NDK({
-          explicitRelayUrls: data.relays,
-        });
-
-
-        const profile = await newNdk.fetchEvent({
-          kinds: [NDKKind.Metadata],
-          authors: [data.pubkey]
-        })
-        console.log("profile", profile)
-        if (profile) {
-          setProfileEvent(profile)
-          const user = newNdk.getUser({ pubkey: profile?.pubkey });
-          const profileUser = await user.fetchProfile();
-          if (profileUser) {
-            setProfileToAdd(profileUser)
-          }
-        }
-      }
-
-    } else {
-      const profile = await ndk.fetchEvent({
-        kinds: [NDKKind.Metadata],
-        authors: [nostrAddress]
-
-      })
-      console.log("profile", profile)
-      if (profile) {
-        setProfileEvent(profile)
-        const user = ndk.getUser({ pubkey: profile?.pubkey });
-        const profileUser = await user.fetchProfile();
-        if (profileUser) {
-          setProfileToAdd(profileUser)
-        }
-      }
-    }
-
-  }
 
   useEffect(() => {
-    const handleGetInvoices = async () => {
+    const handleGetContacts = async () => {
       const contactLocal = await getContacts()
-      console.log("contactLocal", contactLocal)
 
       if (contactLocal) {
         const contacts: Contact[] = JSON.parse(contactLocal)
-        // const invoicesPaid = invoices.filter((i) => i?.state === MintQuoteState?.ISSUED || i?.state === MintQuoteState.PAID)
         setContacts(contacts)
-        console.log("contactsLocal", contacts)
-
+        setContactsStore(contacts)
       }
-
 
       const profiles = await ndk.fetchEvents({
         kinds: [NDKKind.Metadata],
@@ -222,7 +150,7 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
       })
       console.log("profiles", profiles)
     }
-    handleGetInvoices()
+    handleGetContacts()
 
   }, [])
 
@@ -232,25 +160,71 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
   };
 
-  const handleRemoveContact = () => {
+  const handleRemoveContact = (contactToRemove:Contact) => {
     console.log("handleRemoveContact",)
 
-    addToast({
-      title: "Remove coming soon", type: TypeToast.success
-    })
+    const contactLocal = getContacts()
+    if(contactLocal) {
+      const contactsExisting: Contact[] = JSON.parse(contactLocal)
+
+      const oldLen = contactsExisting?.length;
+      const newContacts = contactsExisting.filter((c) => c?.nip05 != contactToRemove?.nip05)
+      const newLen = newContacts?.length;
+      updateContacts(newContacts)
+      console.log("newContacts",newContacts)
+
+      setContactsStore(newContacts)
+      setContacts(newContacts)
+
+      if(newLen != oldLen) {
+        addToast({
+          title: "Remove contact successful", type: TypeToast.success
+        })
+      } else {
+        addToast({
+          title: "Remove failed", type: TypeToast.warning
+        })
+      }
+  
+    }
+ 
   }
 
   const handleAddContact = () => {
 
     const contactLocal = getContacts()
-    console.log("contactLocal", contactLocal)
     if (!profileToAdd) {
       return addToast({
         title: "Remove coming soon", type: TypeToast.error
       })
     }
-    addContacts([profileToAdd as Contact])
-    setContacts([...contacts, profileToAdd])
+    let newContact: Contact = {
+      ...profileToAdd,
+      pubkey: nostrAddress,
+      nprofile: nostrAddress
+    }
+    if (contactLocal) {
+      const contactsExisting: Contact[] = JSON.parse(contactLocal)
+
+      const isFind = contactsExisting.find((c) => c?.nip05 === profileToAdd?.nip05)
+      if (isFind) {
+        return addToast({
+          title: "Contact already added", type: TypeToast.warning
+        })
+      }
+     
+      addContacts([newContact])
+      setContacts([...contacts, profileToAdd])
+      addToast({ title: "Contact added", type: TypeToast.success })
+    } else {
+      
+   
+      addContacts([newContact])
+      setContacts([...contacts, profileToAdd])
+      addToast({ title: "Contact added", type: TypeToast.success })
+    }
+
+
   }
 
   return (
@@ -302,7 +276,7 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
                   </div>
 
                   <div className="px-3">
-                    <button onClick={handleRemoveContact}>Remove</button>
+                    <button onClick={() => handleRemoveContact(c)}>Remove</button>
                   </div>
                   {/* 
                   <div className="justify-between items-center mt-1">
