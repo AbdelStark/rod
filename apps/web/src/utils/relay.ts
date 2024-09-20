@@ -6,6 +6,9 @@ export const RELAYS_PROD = [
   "wss://relay.snort.social",
   "wss://relay.damus.io",
   "wss://nos.lol",
+  'wss://relay.nostr.band/', 
+  'wss://nos.lol/', 
+  'wss://nostr.bitcoiner.social/'
   // 'wss://relay.n057r.club', 'wss://relay.nostr.net',
 ];
 

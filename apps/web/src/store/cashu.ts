@@ -2,6 +2,7 @@ import {createStore} from 'zustand';
 
 import { Proof } from '@cashu/cashu-ts';
 import createBoundedUseStore from './createBoundedUseStore';
+import { Contact } from '../types';
 
 interface State  {
   publicKey: string;
@@ -18,6 +19,7 @@ interface State  {
   proofs?: Proof[];
   useNostr?: boolean;
   pendingTokens?:string[];
+  contacts:Contact[];
 };
 
 interface Action {
@@ -34,6 +36,9 @@ interface Action {
   setProofs: (proofs:Proof[]) => void;
   setMintsRequests: (mintRequests:string[]) => void;
   setNWCUrl: (nwcUrl:string) => void;
+
+  setContacts: (contacts:Contact[]) => void;
+
 };
 
 export const cashuStore = createStore<State & Action>((set) => ({
@@ -47,6 +52,7 @@ export const cashuStore = createStore<State & Action>((set) => ({
   mints: undefined as unknown as string[],
   mintRequests: undefined as unknown as string[],
   proofs: undefined as unknown as Proof[],
+  contacts:[] as Contact[],
 
   setAuth: (publicKey, privateKey) => {
     set({publicKey, privateKey});
@@ -80,6 +86,9 @@ export const cashuStore = createStore<State & Action>((set) => ({
   },
   setProofs: (proofs) => {
     set({proofs});
+  },
+  setContacts: (contacts) => {
+    set({contacts});
   },
 }));
 
