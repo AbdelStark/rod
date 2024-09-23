@@ -25,35 +25,34 @@ import SendModal from "./components/send-modal";
 import ManageContactModal from "./components/modal-manage-contacts";
 import { Transaction, Contact, Notification } from "../types";
 import { getContacts } from "../utils/storage/nostr";
-
+import MintManagement from "./components/mint-management";
 
 
 export default function Home() {
-  // const [balance, setBalance] = useState<number>(10860);
   const [balance, setBalance] = useState<number>(0);
   const router = useRouter()
 
-  const { setMnemonic, setContacts:setContactsStore } = useCashuStore()
+  const { setMnemonic, setContacts: setContactsStore } = useCashuStore()
   const { setAuth } = useAuth()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
   const [contacts, setContacts] = useState<Contact[]>(
     [
-    // { nip05: "@gohan", image: "/avatar/gohan.jpg",
-    //   displayName:"gohan",
-    //  },
-    // { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
-    //   displayName:"vegeta",
+      // { nip05: "@gohan", image: "/avatar/gohan.jpg",
+      //   displayName:"gohan",
+      //  },
+      // { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
+      //   displayName:"vegeta",
 
-    //  },
-    // { nip05: "@frieza", image: "/avatar/frieza.png",
-    //   displayName:"frieza"
-    //  },
-    // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
-    // { nip05: "@cell", image: "/avatar/cell.jpg" },
-  ]
-)
+      //  },
+      // { nip05: "@frieza", image: "/avatar/frieza.png",
+      //   displayName:"frieza"
+      //  },
+      // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
+      // { nip05: "@cell", image: "/avatar/cell.jpg" },
+    ]
+  )
 
 
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -115,17 +114,17 @@ export default function Home() {
   }
 
   const getContactsLocal = () => {
-    if(isFirstLoadDone) return;
+    if (isFirstLoadDone) return;
     const contactLocalStr = getContacts()
-    if(contactLocalStr) {
+    if (contactLocalStr) {
       let contactsLocal: Contact[] = JSON.parse(contactLocalStr)
 
       const contactsSet = new Set([...contactsLocal])
-      console.log("contactsLocal",contactsLocal)
+      console.log("contactsLocal", contactsLocal)
       setContacts(Array.from(contactsSet))
       setContactsStore(Array.from(contactsSet))
     }
-   
+
 
 
   }
@@ -281,6 +280,9 @@ export default function Home() {
             className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
 
           >Transactions</Tab>
+          <Tab
+            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+          >Mint</Tab>
         </TabList>
         <TabPanels>
 
@@ -292,6 +294,12 @@ export default function Home() {
           </TabPanel>
           <TabPanel>
             <TransactionHistory
+              onTransactionClick={handleTransactionClick}
+            // transactions={transactions}
+            />
+          </TabPanel>
+          <TabPanel>
+            <MintManagement
               onTransactionClick={handleTransactionClick}
             // transactions={transactions}
             />

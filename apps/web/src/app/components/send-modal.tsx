@@ -29,6 +29,8 @@ const SendModal: React.FC<SendModalProps> = ({
   const [, setIsCopied] = useState<boolean>(false);
   const {  meltTokens, wallet } = useCashu()
   const {handlePayInvoice} = usePayment()
+
+
   // const handlePayInvoice = async () => {
   //   if (!invoice) return;
   //   const proofsLocalStr = getProofs()

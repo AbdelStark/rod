@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { EyeIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import type { CurrencyUnit } from "../../utils/currency-utils";
 import { formatBalance } from "../../utils/currency-utils";
+import MintView from "./mint-view";
 
 interface BalanceProps {
   balance: number;
+  isDisabledMint?: boolean;
 }
 
-const Balance: React.FC<BalanceProps> = ({ balance }) => {
+const Balance: React.FC<BalanceProps> = ({ balance, isDisabledMint }) => {
   const [unit, setUnit] = useState<CurrencyUnit>("sats");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -63,6 +65,11 @@ const Balance: React.FC<BalanceProps> = ({ balance }) => {
           </button>
         </div>
       ) : null}
+
+
+      {!isDisabledMint &&
+        <MintView></MintView>
+      }
     </div>
   );
 };

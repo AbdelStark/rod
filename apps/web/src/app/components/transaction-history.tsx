@@ -58,13 +58,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
   useEffect(() => {
     const handleGetInvoices = async () => {
-      const invoicesLocal = await getTransactions()
-
+      const invoicesLocal = getTransactions()
 
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         const invoicesPaid = invoices.filter((i) => i?.state === MintQuoteState?.ISSUED || i?.state === MintQuoteState.PAID)
-        setTxInvoices(invoicesPaid?.reverse())
+        const invoicesSorted = invoicesPaid.sort((a, b) => Number(a?.date) + Number(b?.date))
+        setTxInvoices(invoicesSorted)
 
       }
     }

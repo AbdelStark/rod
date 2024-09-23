@@ -1,5 +1,5 @@
 import { Proof } from "@cashu/cashu-ts"
-import { getProofs } from "../utils/storage/cashu"
+import { addProofsSpent, getProofs } from "../utils/storage/cashu"
 import { useCashu } from "./useCashu"
 import { TypeToast, useToast } from "./useToast"
 
@@ -43,6 +43,7 @@ export const usePayment = () => {
                     title: "Payment send",
                     type: TypeToast.success
                 })
+                addProofsSpent( proofs?.slice(lenProof - 1, lenProof))
                 return tokens;
             }
 

@@ -201,11 +201,19 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
                     className="flex items-center p-2 hover:bg-gray-700 rounded-lg transition-colors duration-150"
                     key={c?.handle}
                   >
-                    {c?.image &&
+                    {c?.image ?
                       <img
                         alt={c?.nip05}
                         className="w-10 h-10 rounded-full mr-3"
                         src={c?.image?.toString()}
+                      />
+                      :
+                      <img
+                        alt={`Avatar of ${c?.pubkey}`}
+                        // height={64}
+                        className="w-10 h-10 rounded-full mr-3"
+                        src={"/avatar/gohan.jpg"}
+                        // width={64}
                       />
                     }
 

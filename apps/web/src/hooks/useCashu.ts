@@ -20,11 +20,11 @@ export const useCashu = () => {
     const { privateKey } = useAuth()
     const { setSeed, seed, mnemonic, setMnemonic } = useCashuStore()
 
-    const [mintUrl,] = useState<string | undefined>("https://mint.minibits.cash/Bitcoin")
+    const [mintUrl, setMintUrl] = useState<string | undefined>("https://mint.minibits.cash/Bitcoin")
     const [mint, setMint] = useState<CashuMint>(new CashuMint(mintUrl ?? "https://mint.minibits.cash/Bitcoin"))
     const [_, setMintKeys] = useState<MintKeys[]>()
     const [mintKeysset,] = useState<MintKeys | undefined>()
-    const [, setMintInfo] = useState<GetInfoResponse | undefined>()
+    const [mintInfo, setMintInfo] = useState<GetInfoResponse | undefined>()
 
     // const cashuMint = useMemo(() => {
     //     return mint;
@@ -358,7 +358,11 @@ export const useCashu = () => {
         checkMintQuote,
         checkProofSpent,
         receiveEcash,
-        handleReceivedPayment
+        handleReceivedPayment,
+        mintUrl,
+        setMintUrl,
+        mintInfo,
+        setMintInfo
 
     }
 

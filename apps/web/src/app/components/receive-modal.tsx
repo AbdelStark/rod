@@ -76,20 +76,28 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
   const handleReceiveEcash = async () => {
 
 
-    if (!ecash) {
-      return;
+    try {
+
+      if (!ecash) {
+        return;
+      }
+      const encoded = getDecodedToken(ecash)
+      console.log("encoded", encoded)
+  
+  
+      const response = await wallet?.receive(encoded);
+      console.log("response", response)
+  
+      if (response) {
+        addToast({ title: "ecash payment received", type: TypeToast.success })
+        await addProofs(response)
+      }
+    }catch(e) {
+      console.log("handleReceiveEcash error",e)
+
     }
-    const encoded = getDecodedToken(ecash)
-    console.log("encoded", encoded)
 
 
-    const response = await wallet?.receive(encoded);
-    console.log("response", response)
-
-    if (response) {
-      addToast({ title: "ecash payment received", type: TypeToast.success })
-      await addProofs(response)
-    }
   }
 
   const handleCopy = async () => {

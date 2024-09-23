@@ -23,6 +23,7 @@ export const ROD_RELAYS =
       ...RELAYS_PROD,
     ]
     : [
+      ...RELAYS_PROD,
       'wss://nostr-relay-nestjs-production.up.railway.app',
     ];
 
