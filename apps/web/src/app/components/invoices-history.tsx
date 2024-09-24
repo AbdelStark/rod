@@ -214,7 +214,7 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
                 </span>
               </div>
 
-              {invoice?.direction != "out" || !invoice?.direction &&
+              {invoice?.direction != "out" &&
                 <div
                   className="p-1"
                 >

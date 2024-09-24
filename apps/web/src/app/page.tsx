@@ -26,16 +26,28 @@ import ManageContactModal from "./components/modal-manage-contacts";
 import { Transaction, Contact, Notification } from "../types";
 import { getContacts } from "../utils/storage/nostr";
 import MintManagement from "./components/mint-management";
+import { ProofInvoice } from "../types/wallet";
+import { useCashuBalance } from "../hooks/useCashuBalance";
 
 
 export default function Home() {
-  const [balance, setBalance] = useState<number>(0);
+  // const [balance, setBalance] = useState<number>(0);
   const router = useRouter()
 
+  const { wallet, mint, getKeySets, getKeys, mintUrl } = useCashu()
+  const { addToast } = useToast()
   const { setMnemonic, setContacts: setContactsStore } = useCashuStore()
   const { setAuth } = useAuth()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isManageContactsModalOpen, setIsManageContactsModalOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
 
   const [contacts, setContacts] = useState<Contact[]>(
     [
@@ -76,39 +88,38 @@ export default function Home() {
     },
   ]);
 
-  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [isManageContactsModalOpen, setIsManageContactsModalOpen] = useState(false);
-  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
-
-  const { wallet } = useCashu()
-  const { addToast } = useToast()
-
-  const getProofsWalletAndBalance = async () => {
-    const proofsLocal = getProofs()
-    if (proofsLocal) {
-      /** TODO clean proofs */
-      let proofs: Proof[] = JSON.parse(proofsLocal)
-      const proofsSpent = await wallet?.checkProofsSpent(proofs)
-      // console.log("proofsSpent", proofsSpent)
-      proofs = proofs?.filter((p) => {
-        if (!proofsSpent?.includes(p)) {
-          return p;
-        }
-      })
-
-      const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
-      console.log("totalAmount", totalAmount)
-      setBalance(totalAmount)
-
-    }
 
 
-  }
+  const {getProofsWalletAndBalance, balance, setBalance} = useCashuBalance()
+  // const getProofsWalletAndBalance = async () => {
+  //   const proofsLocal = getProofs()
+  //   if (proofsLocal) {
+  //     /** TODO clean proofs */
+  //     let proofs: ProofInvoice[] = JSON.parse(proofsLocal)
+  //     console.log("proofs", proofs)
+
+  //     const proofsSpent = await wallet?.checkProofsSpent(proofs)
+  //     const keys = await mint.getKeySets()
+  //     console.log("proofsSpent", proofsSpent)
+  //     console.log("keys", keys)
+
+
+  //     proofs = proofs?.filter((p) => {
+  //       if (!proofsSpent?.includes(p)
+  //         && keys?.keysets?.find((k) => k?.id == p?.id)
+  //       ) {
+  //         return p;
+  //       }
+  //     })
+
+  //     const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
+  //     console.log("totalAmount", totalAmount)
+  //     setBalance(totalAmount)
+
+  //   }
+
+
+  // }
 
   const getContactsLocal = () => {
     if (isFirstLoadDone) return;
@@ -136,7 +147,7 @@ export default function Home() {
       if (!result) {
         addToast({ title: "Authentification issue.", type: TypeToast.warning })
 
-        return router.push("/onboarding")
+        // return router.push("/onboarding")
 
       } else {
         const { secretKey, mnemonic, publicKey } = result
@@ -153,6 +164,7 @@ export default function Home() {
   }
   useEffect(() => {
     checkWalletSetup()
+
   }, [isConnected]);
   useEffect(() => {
     getContactsLocal()
