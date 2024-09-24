@@ -229,6 +229,8 @@ const SendModal: React.FC<SendModalProps> = ({
                   className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChangeInvoice}
                   type="text"
+                  placeholder="Ln address"
+
                   value={invoice}
                 >
                 </input>
@@ -249,6 +251,7 @@ const SendModal: React.FC<SendModalProps> = ({
                   className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"
                   onChange={handleChangeAmount}
                   type="number"
+                  placeholder="Amount in sats"
                   value={amount}
                 >
                 </input>

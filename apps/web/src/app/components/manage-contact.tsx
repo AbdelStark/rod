@@ -85,9 +85,10 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
       const profiles = await ndk.fetchEvents({
         kinds: [NDKKind.Metadata],
+        limit:100,
 
       })
-      console.log("profiles", profiles)
+      // console.log("profiles", profiles)
     }
     handleGetContacts()
 
@@ -132,9 +133,14 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
   const handleAddContact = () => {
 
     const contactLocal = getContacts()
+    if (!nostrAddress) {
+      return addToast({
+        title: "Add a Nostr address", type: TypeToast.error
+      })
+    }
     if (!user) {
       return addToast({
-        title: "Remove coming soon", type: TypeToast.error
+        title: "Verify the Nostr profile", type: TypeToast.error
       })
     }
     let newContact: Contact = {

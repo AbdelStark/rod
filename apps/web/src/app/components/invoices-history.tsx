@@ -72,7 +72,9 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         console.log("invoices", invoices)
-        const invoicesSorted = invoices.sort((a, b) => Number(a?.date) + Number(b?.date))
+        const invoicesSorted = invoices
+        // .sort((a, b) => Number(a?.date) + Number(b?.date))
+        .reverse()
         console.log("invoicesSorted", invoicesSorted)
 
         setInvoices(invoicesSorted)

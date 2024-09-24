@@ -101,9 +101,6 @@ export default function Home() {
         }
       })
 
-      if (proofsSpent) {
-        await addProofsSpent(proofsSpent)
-      }
       const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
       console.log("totalAmount", totalAmount)
       setBalance(totalAmount)
@@ -137,12 +134,15 @@ export default function Home() {
     if (isWalletSetup && isWalletSetup == "true") {
       const result = await NostrKeyManager.getDecryptedPrivateKey()
       if (!result) {
+        addToast({ title: "Authentification issue.", type: TypeToast.warning })
+
+        return router.push("/onboarding")
 
       } else {
         const { secretKey, mnemonic, publicKey } = result
         setAuth(publicKey, secretKey,)
         setMnemonic(mnemonic)
-        addToast({ title: "GM! Connected successfully", type: TypeToast.success })
+        // addToast({ title: "GM! Connected successfully", type: TypeToast.success })
         setIsConnected(true)
         await getProofsWalletAndBalance()
       }
