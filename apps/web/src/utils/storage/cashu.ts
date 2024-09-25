@@ -55,6 +55,18 @@ export const storeInvoices = (invoices: ICashuInvoice[]) => {
   localStorage.setItem(KEY_CASHU_STORE.INVOICES, JSON.stringify(invoices));
 };
 
+export const addInvoices = (invoicesToAdd: ICashuInvoice[]) => {
+  const proofsLocal = getInvoices()
+  if (!proofsLocal) {
+    storeInvoices([...invoicesToAdd as ICashuInvoice[]])
+  } else {
+    const invoicesOld: ICashuInvoice[] = JSON.parse(proofsLocal)
+    storeInvoices([...invoicesOld, ...invoicesToAdd as ICashuInvoice[]])
+  }
+
+}
+
+
 
 export const getTransactions = () => {
 

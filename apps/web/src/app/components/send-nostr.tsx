@@ -7,6 +7,9 @@ import { TypeToast, useToast } from "../../hooks/useToast";
 
 import { Invoice, LightningAddress } from "@getalby/lightning-tools";
 import { usePayment } from "../../hooks/usePayment";
+import { addProofsSpent, getInvoices } from "../../utils/storage/cashu";
+import { ICashuInvoice } from "../../types/wallet";
+import { MintQuoteState } from "@cashu/cashu-ts";
 
 interface SendModalProps {
   onClose?: () => void;
@@ -76,9 +79,7 @@ const SendNostr: React.FC<SendModalProps> = ({
     console.log(invoice.paymentHash); // print the payment hash
 
 
-    setInvoice(invoice?.paymentRequest
-
-    )
+    setInvoice(invoice?.paymentRequest)
 
     if (!invoice) {
       return addToast({
@@ -90,8 +91,7 @@ const SendNostr: React.FC<SendModalProps> = ({
     const response = await handlePayInvoice(invoice?.paymentRequest)
     console.log("response", response)
 
-    if (response) {
-
+    if (response?.tokens) {
       addToast({
         title: "Payment sent",
         type: TypeToast.success

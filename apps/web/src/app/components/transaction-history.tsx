@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { getProofsSpent, getTransactions } from "../../utils/storage/cashu";
+import { getInvoices, getProofsSpent, getTransactions } from "../../utils/storage/cashu";
 import { ICashuInvoice, ProofInvoice } from "../../types/wallet";
 import { MintQuoteState, Proof } from "@cashu/cashu-ts";
 import { Transaction } from "../../types";
@@ -19,6 +19,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   const [_, setAnimate] = useState(false);
   const [txInvoices, setTxInvoices] = useState<ICashuInvoice[]>([])
 
+  console.log("txInvoices", txInvoices)
   const totalInvoices = useMemo(() => {
 
     return txInvoices?.length ?? 10
@@ -58,7 +59,8 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
   useEffect(() => {
     const handleGetInvoices = async () => {
-      const invoicesLocal = getTransactions()
+      const invoicesLocal = getInvoices()
+      let invoicesIn:ICashuInvoice[] = []
 
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
@@ -66,7 +68,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         const invoicesSorted = invoicesPaid
           // .sort((a, b) => Number(a?.date) - Number(b?.date))
           .reverse()
-        setTxInvoices(invoicesSorted)
+
+        invoicesIn = invoicesSorted;
+        setTxInvoices([...invoicesSorted])
 
       }
 
@@ -80,7 +84,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
           })
           .reverse()
         console.log("proofsSpentSorted", proofsSpentSorted)
-        setTxInvoices([...txInvoices, ...proofsSpentSorted ])
+        setTxInvoices([...invoicesIn, ...proofsSpentSorted])
 
       }
     }
@@ -101,8 +105,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
           >
             <div className="flex justify-between items-center">
               <span
-                className={`font-semibold ${(Number(tx.amount) > 0
-                  // || tx?.direction == "in"
+                className={`font-semibold ${(
+                  // Number(tx.amount) > 0||
+                  tx?.direction == "in" || !tx?.direction
                 ) ? "text-green-400" : "text-red-400"
                   }`}
               >

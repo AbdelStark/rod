@@ -10,6 +10,7 @@ export interface ICashuInvoice {
   state?: string | MintQuoteState;
   direction?: "in" | "out"; // receive or send
   quoteResponse?:MintQuoteResponse;
+  type?:"ecash"|"lightning"
 }
 
 
