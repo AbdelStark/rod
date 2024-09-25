@@ -5,15 +5,19 @@ import { addProofsSpent, getProofs } from "../utils/storage/cashu"
 import { useCashu } from "./useCashu"
 import { TypeToast, useToast } from "./useToast"
 import { ProofInvoice } from "../types/wallet"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useCashuStore } from "../store"
 
 export const useCashuBalance = () => {
-    const {  wallet, mint, mintUrl, connectCashMint, connectCashWallet } = useCashu()
-
-
+    const { wallet, mint: mintState, mintUrl, connectCashMint, connectCashWallet } = useCashu()
+    const { mintUrl: mintUrlStore, setMintUrl: setMintUrlStore, setActiveBalance} = useCashuStore()
+  
     const [balance, setBalance] = useState<number>(0)
-    const transformProofSpentToTx = (proofs: Proof[]): ProofInvoice[] => {
+    const balanceMemo = useMemo(() => {
+        return balance
+    },[balance, setBalance])
 
+    const transformProofSpentToTx = (proofs: Proof[]): ProofInvoice[] => {
         return proofs.map((c) => {
             return {
                 date: new Date().getTime(),
@@ -21,13 +25,11 @@ export const useCashuBalance = () => {
                 ...c
             }
         })
-
     }
 
     useEffect(() => {
-
         getProofsWalletAndBalance()
-    },[mintUrl])
+    }, [mintUrl])
 
 
     const getProofsWalletAndBalance = async () => {
@@ -36,17 +38,14 @@ export const useCashuBalance = () => {
         if (proofsLocal) {
             /** TODO clean proofs */
             let proofs: ProofInvoice[] = JSON.parse(proofsLocal)
-            console.log("proofs", proofs)
-
             const proofsSpent = await wallet?.checkProofsSpent(proofs)
-            const keys = await mint.getKeySets()
-            console.log("proofsSpent", proofsSpent)
-            console.log("keys", keys)
-
+            const { mint, keys } = await connectCashMint(mintUrlStore ?? mintUrl)
+            const keyssets = await mint?.getKeySets()
+            console.log("keyssets", keyssets)
 
             proofs = proofs?.filter((p) => {
                 if (!proofsSpent?.includes(p)
-                    && keys?.keysets?.find((k) => k?.id == p?.id)
+                    && keyssets?.keysets?.find((k) => k?.id == p?.id)
                 ) {
                     return p;
                 }
@@ -55,11 +54,10 @@ export const useCashuBalance = () => {
             const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
             console.log("totalAmount", totalAmount)
             setBalance(totalAmount)
-
+            setActiveBalance(totalAmount)
             return totalAmount;
 
         }
-
 
     }
 
@@ -67,7 +65,8 @@ export const useCashuBalance = () => {
     return {
         balance,
         setBalance,
-        getProofsWalletAndBalance
+        getProofsWalletAndBalance,
+        balanceMemo
     }
 
 }

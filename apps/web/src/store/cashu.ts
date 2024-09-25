@@ -9,6 +9,7 @@ interface State  {
   privateKey: string;
   isExtension?: boolean;
   nwcUrl?: string;
+  mintUrl?: string;
 
   // Cashu store auth
   isSeedCashuStorage?: boolean;
@@ -20,6 +21,7 @@ interface State  {
   useNostr?: boolean;
   pendingTokens?:string[];
   contacts:Contact[];
+  activeBalance:number;
 };
 
 interface Action {
@@ -38,6 +40,8 @@ interface Action {
   setNWCUrl: (nwcUrl:string) => void;
 
   setContacts: (contacts:Contact[]) => void;
+  setMintUrl: (mintUrl:string) => void;
+  setActiveBalance:(balance:number) => void;
 
 };
 
@@ -53,6 +57,8 @@ export const cashuStore = createStore<State & Action>((set) => ({
   mintRequests: undefined as unknown as string[],
   proofs: undefined as unknown as Proof[],
   contacts:[] as Contact[],
+  mintUrl: "https://mint.minibits.cash/Bitcoin" as unknown as string,
+  activeBalance:0 as unknown as number,
 
   setAuth: (publicKey, privateKey) => {
     set({publicKey, privateKey});
@@ -89,6 +95,12 @@ export const cashuStore = createStore<State & Action>((set) => ({
   },
   setContacts: (contacts) => {
     set({contacts});
+  },
+  setMintUrl: (mintUrl) => {
+    set({mintUrl});
+  },
+  setActiveBalance: (activeBalance) => {
+    set({activeBalance});
   },
 }));
 

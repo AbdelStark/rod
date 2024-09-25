@@ -3,6 +3,8 @@ import { EyeIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import type { CurrencyUnit } from "../../utils/currency-utils";
 import { formatBalance } from "../../utils/currency-utils";
 import { useCashu } from "../../hooks/useCashu";
+import { useCashuStore } from "../../store";
+import { useCashuBalance } from "../../hooks/useCashuBalance";
 
 interface BalanceProps {
 }
@@ -11,18 +13,20 @@ const MintView: React.FC<BalanceProps> = ({ }) => {
   const [unit, setUnit] = useState<CurrencyUnit>("sats");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
-  const { mintUrl, setMintUrl, getMintInfo, mintInfo, setMintInfo } = useCashu()
+  const { mintUrl, setMintUrl, getMintInfo, mintInfo, setMintInfo, connectCashMint } = useCashu()
+  const { mintUrl: mintUrlStore, setMintUrl: setMintUrlStore } = useCashuStore()
+  const {getProofsWalletAndBalance} = useCashuBalance()
 
   useEffect(() => {
-
     const getInfoMint = async () => {
-
-      if (!mintUrl) return;
-      await getMintInfo(mintUrl)
+      if (!mintUrlStore) return;
+      await getMintInfo(mintUrlStore)
     }
 
     getInfoMint()
-  }, [mintUrl, setMintUrl])
+  }, [mintUrlStore, setMintUrl])
+
+
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -35,6 +39,9 @@ const MintView: React.FC<BalanceProps> = ({ }) => {
   const handleChangeMintUrl = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setMintUrl(value);
+    setMintUrlStore(value)
+    getProofsWalletAndBalance()
+    // connectCashMint(value)
 
   };
 
@@ -54,7 +61,7 @@ const MintView: React.FC<BalanceProps> = ({ }) => {
       </div>
       {isDropdownOpen ? (
         <div
-         className="absolute top-full left-0 mt-2 w-full bg-card-background rounded-md shadow-lg z-10 py-1"
+          className="absolute top-full left-0 mt-2 w-full bg-card-background rounded-md shadow-lg z-10 py-1"
         >
           <input
             className="bg-black text-white rounded-lg px-4 py-2 hover:bg-opacity-90 transition-colors duration-150"

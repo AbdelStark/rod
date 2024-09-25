@@ -14,7 +14,7 @@ const Balance: React.FC<BalanceProps> = ({ balance, isDisabledMint }) => {
   const [unit, setUnit] = useState<CurrencyUnit>("sats");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const { getProofsWalletAndBalance } = useCashuBalance()
+  const { getProofsWalletAndBalance,} = useCashuBalance()
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
