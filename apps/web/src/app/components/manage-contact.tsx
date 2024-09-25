@@ -85,9 +85,10 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
 
       const profiles = await ndk.fetchEvents({
         kinds: [NDKKind.Metadata],
+        limit:100,
 
       })
-      console.log("profiles", profiles)
+      // console.log("profiles", profiles)
     }
     handleGetContacts()
 
@@ -132,9 +133,14 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
   const handleAddContact = () => {
 
     const contactLocal = getContacts()
+    if (!nostrAddress) {
+      return addToast({
+        title: "Add a Nostr address", type: TypeToast.error
+      })
+    }
     if (!user) {
       return addToast({
-        title: "Remove coming soon", type: TypeToast.error
+        title: "Verify the Nostr profile", type: TypeToast.error
       })
     }
     let newContact: Contact = {
@@ -201,11 +207,19 @@ const ManageContacts: React.FC<ManageContactsProps> = ({
                     className="flex items-center p-2 hover:bg-gray-700 rounded-lg transition-colors duration-150"
                     key={c?.handle}
                   >
-                    {c?.image &&
+                    {c?.image ?
                       <img
                         alt={c?.nip05}
                         className="w-10 h-10 rounded-full mr-3"
                         src={c?.image?.toString()}
+                      />
+                      :
+                      <img
+                        alt={`Avatar of ${c?.pubkey}`}
+                        // height={64}
+                        className="w-10 h-10 rounded-full mr-3"
+                        src={"/avatar/gohan.jpg"}
+                        // width={64}
                       />
                     }
 

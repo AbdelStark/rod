@@ -1,5 +1,5 @@
 import { MeltQuoteResponse, Proof, Token } from '@cashu/cashu-ts';
-import { ICashuInvoice } from '../../types/wallet';
+import { ICashuInvoice, ProofInvoice } from '../../types/wallet';
 
 export const KEY_CASHU_STORE = {
   INVOICES: "INVOICES",
@@ -29,7 +29,7 @@ export const getQuotes = () => {
 };
 
 
-export const storeProofs = (proofs: Proof[]) => {
+export const storeProofs = (proofs: ProofInvoice[]) => {
 
 
   localStorage.setItem(KEY_CASHU_STORE.PROOFS, JSON.stringify(proofs));
@@ -55,6 +55,18 @@ export const storeInvoices = (invoices: ICashuInvoice[]) => {
   localStorage.setItem(KEY_CASHU_STORE.INVOICES, JSON.stringify(invoices));
 };
 
+export const addInvoices = (invoicesToAdd: ICashuInvoice[]) => {
+  const proofsLocal = getInvoices()
+  if (!proofsLocal) {
+    storeInvoices([...invoicesToAdd as ICashuInvoice[]])
+  } else {
+    const invoicesOld: ICashuInvoice[] = JSON.parse(proofsLocal)
+    storeInvoices([...invoicesOld, ...invoicesToAdd as ICashuInvoice[]])
+  }
+
+}
+
+
 
 export const getTransactions = () => {
 
@@ -67,18 +79,18 @@ export const storeTransactions = (transactions: ICashuInvoice[]) => {
   localStorage.setItem(KEY_CASHU_STORE.TRANSACTIONS, JSON.stringify(transactions));
 };
 
-export const addProofs = (proofsToAdd: Proof[]) => {
+export const addProofs = (proofsToAdd: ProofInvoice[]) => {
   const proofsLocal = getProofs()
   if (!proofsLocal) {
-    storeProofs([...proofsToAdd as Proof[]])
+    storeProofs([...proofsToAdd as ProofInvoice[]])
   } else {
-    const proofs: Proof[] = JSON.parse(proofsLocal)
-    storeProofs([...proofs, ...proofsToAdd as Proof[]])
+    const proofs: ProofInvoice[] = JSON.parse(proofsLocal)
+    storeProofs([...proofs, ...proofsToAdd as ProofInvoice[]])
   }
 
 }
 
-export const storeProofsSpent = (proofs: Proof[]) => {
+export const storeProofsSpent = (proofs: ProofInvoice[]) => {
 
   localStorage.setItem(KEY_CASHU_STORE.PROOFS_SPENT, JSON.stringify(proofs));
 };
@@ -88,25 +100,25 @@ export const getProofsSpent = () => {
 
   return localStorage.getItem(KEY_CASHU_STORE.PROOFS_SPENT);
 };
-export const addProofsSpent = (proofsToAdd: Proof[]) => {
+export const addProofsSpent = (proofsToAdd: ProofInvoice[]) => {
   const proofsLocal = getProofsSpent()
   if (!proofsLocal) {
-    storeProofsSpent([...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofsToAdd as ProofInvoice[]])
     return proofsToAdd;
   } else {
-    const proofs: Proof[] = JSON.parse(proofsLocal)
-    storeProofsSpent([...proofs, ...proofsToAdd as Proof[]])
+    const proofs: ProofInvoice[] = JSON.parse(proofsLocal)
+    storeProofsSpent([...proofs, ...proofsToAdd as ProofInvoice[]])
     return proofs;
   }
 
 }
 
-export const updateProofsSpent = (proofsToAdd: Proof[]) => {
+export const updateProofsSpent = (proofsToAdd: ProofInvoice[]) => {
   const proofsLocal = getProofsSpent()
   if (!proofsLocal) {
-    storeProofsSpent([...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofsToAdd as ProofInvoice[]])
   } else {
-    storeProofsSpent([...proofsToAdd as Proof[]])
+    storeProofsSpent([...proofsToAdd as ProofInvoice[]])
 
   }
   return proofsToAdd;

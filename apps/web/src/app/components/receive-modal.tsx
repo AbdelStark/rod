@@ -2,7 +2,7 @@ import React, { ChangeEvent, useState } from "react";
 import { Dialog, TabGroup, Tab, TabPanels, TabPanel, TabList, DialogTitle, DialogPanel } from "@headlessui/react";
 import { useCashu } from "../../hooks/useCashu";
 import { getDecodedToken, MintQuoteResponse, MintQuoteState } from "@cashu/cashu-ts";
-import { getInvoices, storeInvoices, addProofs } from "../../utils/storage/cashu";
+import { getInvoices, storeInvoices, addProofs, addInvoices } from "../../utils/storage/cashu";
 import { ICashuInvoice } from "../../types/wallet";
 import { MINTS_URLS } from "../../utils/relay";
 import { TypeToast, useToast } from "../../hooks/useToast";
@@ -40,9 +40,11 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
       quote: quote?.request?.quote,
       state: quote?.request?.state ?? MintQuoteState.UNPAID,
       date: new Date().getTime(),
-      amount: amount?.toString(),
+      amount: amount,
       mint: mintUrl,
       quoteResponse: quote?.request,
+      type:"lightning",
+      direction:"in"
     }
 
     if (invoicesLocal) {
@@ -75,21 +77,41 @@ const ReceiveModal: React.FC<NotificationModalProps> = ({
   };
   const handleReceiveEcash = async () => {
 
+    try {
 
-    if (!ecash) {
-      return;
+      if (!ecash) {
+        return;
+      }
+      const encoded = getDecodedToken(ecash)
+      console.log("encoded", encoded)
+  
+  
+      const response = await wallet?.receive(encoded);
+      console.log("response", response)
+  
+      if (response) {
+        addToast({ title: "ecash payment received", type: TypeToast.success })
+        await addProofs(response)
+      }
+      const invoicesLocal = await getInvoices()
+      const totalAmount = response.reduce((s, t) => (s += t.amount), 0);
+
+      const cashuInvoice: ICashuInvoice = {
+        state:MintQuoteState.ISSUED,
+        date: new Date().getTime(),
+        amount: totalAmount,
+        mint: mintUrl,
+        type:"lightning",
+        direction:"in"
+      }
+      addInvoices([cashuInvoice])
+  
+    }catch(e) {
+      console.log("handleReceiveEcash error",e)
+
     }
-    const encoded = getDecodedToken(ecash)
-    console.log("encoded", encoded)
 
 
-    const response = await wallet?.receive(encoded);
-    console.log("response", response)
-
-    if (response) {
-      addToast({ title: "ecash payment received", type: TypeToast.success })
-      await addProofs(response)
-    }
   }
 
   const handleCopy = async () => {

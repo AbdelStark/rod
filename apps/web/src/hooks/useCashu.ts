@@ -6,6 +6,7 @@ import {
     GetInfoResponse,
     MeltQuoteResponse,
     getDecodedToken,
+    MintAllKeysets,
 } from '@cashu/cashu-ts';
 import { useMemo, useState } from 'react';
 import { NDKCashuToken } from "@nostr-dev-kit/ndk-wallet"
@@ -20,15 +21,18 @@ export const useCashu = () => {
     const { privateKey } = useAuth()
     const { setSeed, seed, mnemonic, setMnemonic } = useCashuStore()
 
-    const [mintUrl,] = useState<string | undefined>("https://mint.minibits.cash/Bitcoin")
-    const [mint, setMint] = useState<CashuMint>(new CashuMint(mintUrl ?? "https://mint.minibits.cash/Bitcoin"))
-    const [_, setMintKeys] = useState<MintKeys[]>()
-    const [mintKeysset,] = useState<MintKeys | undefined>()
-    const [, setMintInfo] = useState<GetInfoResponse | undefined>()
+    // const [mintUrl, setMintUrl] = useState<string | undefined>("https://mint.minibits.cash/Bitcoin")
+    const [mintUrl, setMintUrl] = useState<string >("https://mint.minibits.cash/Bitcoin")
+    const [mintProps, setMint] = useState<CashuMint>(new CashuMint(mintUrl ?? "https://mint.minibits.cash/Bitcoin"))
 
-    // const cashuMint = useMemo(() => {
-    //     return mint;
-    // }, [mint])
+    const mint = useMemo(() => {
+        return new CashuMint(mintUrl ?? "https://mint.minibits.cash/Bitcoin") ?? mintProps
+    }, [mintUrl])
+    const [_, setMintKeys] = useState<MintKeys[]>()
+    const [mintAllKeysets, setMintAllKeys] = useState<MintAllKeysets>()
+    const [mintKeysset,] = useState<MintKeys | undefined>()
+    const [mintInfo, setMintInfo] = useState<GetInfoResponse | undefined>()
+
     const [walletCashu, setWallet] = useState<CashuWallet | undefined>(new CashuWallet(mint, {
         mnemonicOrSeed: mnemonic ?? seed,
         keys: mintKeysset,
@@ -38,7 +42,11 @@ export const useCashu = () => {
     const [, setResponseQuote] = useState<MintQuoteResponse | undefined>()
 
     const wallet = useMemo(() => {
-        return walletCashu
+        return new CashuWallet(mint, {
+            mnemonicOrSeed: mnemonic ?? seed,
+            keys: mintKeysset,
+            unit: mintKeysset?.unit
+        })
         // return new CashuWallet(mintUrl ? new CashuMint(mintUrl) : mint, {
         //     mnemonicOrSeed: mnemonic ?? seed,
         //     keys: mintKeysset,
@@ -68,7 +76,12 @@ export const useCashu = () => {
         setMint(mintCashu)
 
         const keys = (await mintCashu?.getKeys()).keysets
+        console.log("keys",keys)
         setMintKeys(keys)
+
+        const keyssets = (await mintCashu?.getKeySets())
+        setMintAllKeys(keyssets)
+
         return { mint: mintCashu, keys };
     }
 
@@ -358,7 +371,11 @@ export const useCashu = () => {
         checkMintQuote,
         checkProofSpent,
         receiveEcash,
-        handleReceivedPayment
+        handleReceivedPayment,
+        mintUrl,
+        setMintUrl,
+        mintInfo,
+        setMintInfo
 
     }
 

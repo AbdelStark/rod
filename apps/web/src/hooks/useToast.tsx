@@ -7,11 +7,11 @@ interface Toast {
   description?: string;
   type?: TypeToast | string
 }
-export enum TypeToast {
-  "success",
-  "error", "warning"
+  export enum TypeToast {
+    "success",
+    "error", "warning"
 
-}
+  }
 // Define the context type
 interface ToastContextType {
   addToast: (props: AddToast) => void;

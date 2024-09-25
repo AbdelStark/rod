@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { getTransactions } from "../../utils/storage/cashu";
-import { ICashuInvoice } from "../../types/wallet";
-import { MintQuoteState } from "@cashu/cashu-ts";
+import { getInvoices, getProofsSpent, getTransactions } from "../../utils/storage/cashu";
+import { ICashuInvoice, ProofInvoice } from "../../types/wallet";
+import { MintQuoteState, Proof } from "@cashu/cashu-ts";
 import { Transaction } from "../../types";
 
 interface TransactionHistoryProps {
@@ -17,8 +17,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [_, setAnimate] = useState(false);
-  const [txInvoices, setTxInvoices] = useState<ICashuInvoice[] | undefined>([])
+  const [txInvoices, setTxInvoices] = useState<ICashuInvoice[]>([])
 
+  console.log("txInvoices", txInvoices)
   const totalInvoices = useMemo(() => {
 
     return txInvoices?.length ?? 10
@@ -58,13 +59,32 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
   useEffect(() => {
     const handleGetInvoices = async () => {
-      const invoicesLocal = await getTransactions()
-
+      const invoicesLocal = getInvoices()
+      let invoicesIn:ICashuInvoice[] = []
 
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         const invoicesPaid = invoices.filter((i) => i?.state === MintQuoteState?.ISSUED || i?.state === MintQuoteState.PAID)
-        setTxInvoices(invoicesPaid?.reverse())
+        const invoicesSorted = invoicesPaid
+          // .sort((a, b) => Number(a?.date) - Number(b?.date))
+          .reverse()
+
+        invoicesIn = invoicesSorted;
+        setTxInvoices([...invoicesSorted])
+
+      }
+
+      const proofsLocal = getProofsSpent()
+
+      if (proofsLocal) {
+        const proofsSpent: ProofInvoice[] = JSON.parse(proofsLocal)
+        const proofsSpentSorted = proofsSpent
+          .map((c) => {
+            return c;
+          })
+          .reverse()
+        console.log("proofsSpentSorted", proofsSpentSorted)
+        setTxInvoices([...invoicesIn, ...proofsSpentSorted])
 
       }
     }
@@ -85,7 +105,10 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
           >
             <div className="flex justify-between items-center">
               <span
-                className={`font-semibold ${Number(tx.amount) > 0 ? "text-green-400" : "text-red-400"
+                className={`font-semibold ${(
+                  // Number(tx.amount) > 0||
+                  tx?.direction == "in" || !tx?.direction
+                ) ? "text-green-400" : "text-red-400"
                   }`}
               >
                 {formatAmount(Number(tx.amount))}

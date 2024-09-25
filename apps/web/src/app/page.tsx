@@ -25,35 +25,47 @@ import SendModal from "./components/send-modal";
 import ManageContactModal from "./components/modal-manage-contacts";
 import { Transaction, Contact, Notification } from "../types";
 import { getContacts } from "../utils/storage/nostr";
-
+import MintManagement from "./components/mint-management";
+import { ProofInvoice } from "../types/wallet";
+import { useCashuBalance } from "../hooks/useCashuBalance";
 
 
 export default function Home() {
-  // const [balance, setBalance] = useState<number>(10860);
-  const [balance, setBalance] = useState<number>(0);
   const router = useRouter()
 
-  const { setMnemonic, setContacts:setContactsStore } = useCashuStore()
+  const { wallet, mint, getKeySets, getKeys, mintUrl } = useCashu()
+  const { addToast } = useToast()
+  const { setMnemonic, setContacts: setContactsStore, activeBalance } = useCashuStore()
+  const { getProofsWalletAndBalance, balance, setBalance, balanceMemo, } = useCashuBalance()
+
   const { setAuth } = useAuth()
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isManageContactsModalOpen, setIsManageContactsModalOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
 
   const [contacts, setContacts] = useState<Contact[]>(
     [
-    // { nip05: "@gohan", image: "/avatar/gohan.jpg",
-    //   displayName:"gohan",
-    //  },
-    // { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
-    //   displayName:"vegeta",
+      // { nip05: "@gohan", image: "/avatar/gohan.jpg",
+      //   displayName:"gohan",
+      //  },
+      // { nip05: "@vegeta", image: "/avatar/vegeta.jpeg",
+      //   displayName:"vegeta",
 
-    //  },
-    // { nip05: "@frieza", image: "/avatar/frieza.png",
-    //   displayName:"frieza"
-    //  },
-    // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
-    // { nip05: "@cell", image: "/avatar/cell.jpg" },
-  ]
-)
+      //  },
+      // { nip05: "@frieza", image: "/avatar/frieza.png",
+      //   displayName:"frieza"
+      //  },
+      // { nip05: "@piccolo", image: "/avatar/piccolo.jpg" },
+      // { nip05: "@cell", image: "/avatar/cell.jpg" },
+    ]
+  )
 
 
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -77,55 +89,18 @@ export default function Home() {
     },
   ]);
 
-  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [isManageContactsModalOpen, setIsManageContactsModalOpen] = useState(false);
-  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isFirstLoadDone, setIsFirstLoadDone] = useState(false);
-
-  const { wallet } = useCashu()
-  const { addToast } = useToast()
-
-  const getProofsWalletAndBalance = async () => {
-    const proofsLocal = getProofs()
-    if (proofsLocal) {
-      /** TODO clean proofs */
-      let proofs: Proof[] = JSON.parse(proofsLocal)
-      const proofsSpent = await wallet?.checkProofsSpent(proofs)
-      // console.log("proofsSpent", proofsSpent)
-      proofs = proofs?.filter((p) => {
-        if (!proofsSpent?.includes(p)) {
-          return p;
-        }
-      })
-
-      if (proofsSpent) {
-        await addProofsSpent(proofsSpent)
-      }
-      const totalAmount = proofs.reduce((s, t) => (s += t.amount), 0);
-      console.log("totalAmount", totalAmount)
-      setBalance(totalAmount)
-
-    }
-
-
-  }
 
   const getContactsLocal = () => {
-    if(isFirstLoadDone) return;
+    if (isFirstLoadDone) return;
     const contactLocalStr = getContacts()
-    if(contactLocalStr) {
+    if (contactLocalStr) {
       let contactsLocal: Contact[] = JSON.parse(contactLocalStr)
 
       const contactsSet = new Set([...contactsLocal])
-      console.log("contactsLocal",contactsLocal)
       setContacts(Array.from(contactsSet))
       setContactsStore(Array.from(contactsSet))
     }
-   
+
 
 
   }
@@ -138,12 +113,15 @@ export default function Home() {
     if (isWalletSetup && isWalletSetup == "true") {
       const result = await NostrKeyManager.getDecryptedPrivateKey()
       if (!result) {
+        addToast({ title: "Authentification issue.", type: TypeToast.warning })
+
+        // return router.push("/onboarding")
 
       } else {
         const { secretKey, mnemonic, publicKey } = result
         setAuth(publicKey, secretKey,)
         setMnemonic(mnemonic)
-        addToast({ title: "GM! Connected successfully", type: TypeToast.success })
+        // addToast({ title: "GM! Connected successfully", type: TypeToast.success })
         setIsConnected(true)
         await getProofsWalletAndBalance()
       }
@@ -154,6 +132,7 @@ export default function Home() {
   }
   useEffect(() => {
     checkWalletSetup()
+
   }, [isConnected]);
   useEffect(() => {
     getContactsLocal()
@@ -258,7 +237,12 @@ export default function Home() {
           setIsManageContactsModalOpen(false);
         }}
       />
-      <Balance balance={balance} />
+      <Balance
+        // balance={balance} 
+        // balance={balanceMemo}
+        balance={activeBalance}
+
+      />
       <Actions
         onGift={handleGift}
         onReceive={handleReceive}
@@ -281,6 +265,9 @@ export default function Home() {
             className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
 
           >Transactions</Tab>
+          <Tab
+            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+          >Mint</Tab>
         </TabList>
         <TabPanels>
 
@@ -292,6 +279,12 @@ export default function Home() {
           </TabPanel>
           <TabPanel>
             <TransactionHistory
+              onTransactionClick={handleTransactionClick}
+            // transactions={transactions}
+            />
+          </TabPanel>
+          <TabPanel>
+            <MintManagement
               onTransactionClick={handleTransactionClick}
             // transactions={transactions}
             />

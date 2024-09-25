@@ -45,11 +45,19 @@ const QuickSend: React.FC<QuickSendProps> = ({ contacts, onSend, onOpen }) => {
                   }
                 }}
               >
-                {contact?.image &&
+                {contact?.image ?
                   <Image
                     alt={`Avatar of ${contact?.handle}`}
                     height={64}
                     src={contact?.image}
+                    width={64}
+                  />
+
+                  :
+                  <Image
+                    alt={`Avatar of ${contact?.handle}`}
+                    height={64}
+                    src={"/avatar/gohan.jpg"}
                     width={64}
                   />
                 }

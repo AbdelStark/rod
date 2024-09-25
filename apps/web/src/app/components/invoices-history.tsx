@@ -18,7 +18,7 @@ const TRANSACTIONS_PER_PAGE = 5;
 const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
 }) => {
 
-  const {  mint, checkMintQuote, receiveP2PK, mintTokens } = useCashu()
+  const { mint, checkMintQuote, receiveP2PK, mintTokens } = useCashu()
   const { addToast } = useToast();
   const [invoices, setInvoices] = useState<ICashuInvoice[] | undefined>([])
 
@@ -72,7 +72,12 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
       if (invoicesLocal) {
         const invoices: ICashuInvoice[] = JSON.parse(invoicesLocal)
         console.log("invoices", invoices)
-        setInvoices(invoices?.reverse())
+        const invoicesSorted = invoices
+        // .sort((a, b) => Number(a?.date) + Number(b?.date))
+        .reverse()
+        console.log("invoicesSorted", invoicesSorted)
+
+        setInvoices(invoicesSorted)
 
       }
     }
@@ -197,6 +202,8 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
                 <span
                   className={`font-semibold ${Number(invoice?.amount) > 0 ? "text-green-400" : "text-red-400"
                     }`}
+                // className={`font-semibold ${Number(invoice?.amount) > 0 ? "text-green-400" : "text-red-400"
+                //   }`}
                 >
                   {formatAmount(Number(invoice?.amount))}
                 </span>
@@ -206,12 +213,16 @@ const InvoicesHistory: React.FC<TransactionHistoryProps> = ({
                   {formatDate(new Date(invoice?.date ?? new Date()))}
                 </span>
               </div>
-              <div
-                className="p-1"
-              >
-                <button
-                  onClick={() => handleVerify(invoice?.quote)}> Verify</button>
-              </div>
+
+              {invoice?.direction != "out" &&
+                <div
+                  className="p-1"
+                >
+                  <button
+                    onClick={() => handleVerify(invoice?.quote)}> Verify</button>
+                </div>
+              }
+
               <div
                 className="p-1"
               >
